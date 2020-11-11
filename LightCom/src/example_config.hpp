@@ -7,3 +7,6 @@ if you constribute to this project and you don't have a config.hpp copy this fil
 #pragma once
 
 #define BAUD_RATE 115200
+#define SENDER_DATA_LED_PIN 5
+#define SENDER_CLOCK_LED_PIN 6
+#define RECIEVER_PIN 7

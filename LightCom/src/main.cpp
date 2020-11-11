@@ -6,16 +6,19 @@
  * @date 2020-11-11
  * 
  * @copyright Copyright (c) 2020
- * 
+ * Wir entwickeln ein Programm :^)
  */
 
 #include <Arduino.h>
 #include "config.hpp"
+#include "LightCom.hpp"
+
+LightCom com;
 
 void setup() {
-  // put your setup code here, to run once:
+  com.setup();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  com.loop();
 }
