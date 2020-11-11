@@ -13,8 +13,6 @@
 #include "config.hpp"
 #include "LightCom.hpp"
 
-LightCom com;
-
 void setup() {
   com.setup();
 }
