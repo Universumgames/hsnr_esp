@@ -12,3 +12,4 @@ if you constribute to this project and you don't have a config.hpp copy this fil
 #define RECIEVER_PIN 7
 #define I2C_MASTER_ADRESS 1
 #define I2C_SLAVE_ADRESS 2
+#define I2C_CLOCK_SPEED 10000

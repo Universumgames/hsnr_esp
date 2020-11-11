@@ -20,6 +20,7 @@ void LightCom::setup()
 
     Wire.begin(I2C_MASTER_ADRESS);
     Wire.onReceive(onRecieveC);
+    Wire.setClock(I2C_CLOCK_SPEED);
 }
 
 void LightCom::loop()
