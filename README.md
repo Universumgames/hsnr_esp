@@ -2,7 +2,7 @@
 
 <sub>created by Tom Arlt, Florian Meyer, Henning Müller, Florian Körwer</sub>
 
-This project is a simple Aduino Uno project for communication between two Arduinos via light and controlling them vie a serial monitor.
+This project is a simple Aduino Uno project for communication between two Arduinos via light and controlling them via a serial monitor.
 
 ## Installation
 This project was created with PlatformIO, an extension for VS Code to write Arduino programs, compile and write the binaries to an Arduino.
