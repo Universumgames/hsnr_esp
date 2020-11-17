@@ -5,6 +5,10 @@
 	},
 	{
 		"path": "."
+	},
+	{
+		"name": "Arduino_Einfuehrung",
+		"path": "Arduino_Einfuehrung"
 	}
 ],
   "settings": {}
