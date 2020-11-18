@@ -60,6 +60,7 @@ double getDistance()
   digitalWrite(TRIGGER, LOW);
   time = pulseIn(ECHO, HIGH);
   distance = time * 0.017;
+  delay(50);
   return distance;
 }
 
@@ -72,7 +73,7 @@ void setup()
   Serial.println("G\t Y\t R");
 #endif
 
-//define pin usage
+  //define pin usage
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
   pinMode(YELLOW, OUTPUT);
@@ -89,7 +90,7 @@ void loop()
   allLED(LOW);
   double dist = getDistance();
 
-//Smooth transition between three leds
+  //Smooth transition between three leds
   double mappedVal = map(dist, 0, 37, 0, 370);
   //red
   if (mappedVal >= RED_BEGIN && mappedVal <= RED_END)
@@ -106,7 +107,7 @@ void loop()
   Serial.print("\t");
 #endif
 
-//yellow
+  //yellow
   if (mappedVal >= YELLOW_BEGIN && mappedVal <= YELLOW_END)
   {
     double val = mappedVal - YELLOW_BEGIN;
@@ -121,7 +122,7 @@ void loop()
   Serial.print("\t");
 #endif
 
-//green
+  //green
   if (mappedVal >= GREEN_BEGIN)
   {
     double val = mappedVal - GREEN_BEGIN;
