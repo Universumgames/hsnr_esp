@@ -19,6 +19,8 @@
 
 //if serial output is needed uncomment next line
 //#define SERIAL_DEBUG true
+//switch between pwm and default
+#define USE_PWM
 
 //1 = true = HIGH
 //0 = false = LOW
@@ -87,18 +89,22 @@ void setup()
 void loop()
 {
   //turn all LEDs off
-  allLED(LOW);
   double dist = getDistance();
 
   //Smooth transition between three leds
   double mappedVal = map(dist, 0, 37, 0, 370);
+  allLED(LOW);
   //red
   if (mappedVal >= RED_BEGIN && mappedVal <= RED_END)
   {
     double val = mappedVal - RED_BEGIN;
     double m = map(val, 0, RED_END - RED_BEGIN, 0, 255);
     if (val > 0)
+#ifdef USE_PWM
       analogWrite(RED, m);
+#else
+      digitalWrite(RED, HIGH);
+#endif
 #ifdef SERIAL_DEBUG
     Serial.print(m);
 #endif
@@ -113,7 +119,11 @@ void loop()
     double val = mappedVal - YELLOW_BEGIN;
     double m = map(val, 0, YELLOW_END - YELLOW_BEGIN, 0, 255);
     if (val > 0)
+#ifdef USE_PWM
       analogWrite(YELLOW, m);
+#else
+      digitalWrite(YELLOW, HIGH);
+#endif
 #ifdef SERIAL_DEBUG
     Serial.print(m);
 #endif
@@ -128,7 +138,11 @@ void loop()
     double val = mappedVal - GREEN_BEGIN;
     double m = map(val, 0, GREEN_END - GREEN_BEGIN, 0, 255);
     if (val > 0)
+#ifdef USE_PWM
       analogWrite(GREEN, m);
+#else
+      digitalWrite(GREEN, HIGH);
+#endif
 #ifdef SERIAL_DEBUG
     Serial.print(m);
 #endif
