@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "config.hpp"
+#include "TwoLight.hpp"
 
 class LightCom
 {
@@ -9,7 +10,6 @@ public:
     LightCom();
     void setup();
     void loop();
-    void onRecieve(int length);
 private:
 };
 
