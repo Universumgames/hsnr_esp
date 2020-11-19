@@ -16,6 +16,7 @@
 
 ### 3 d) Geschwindigkeit von (Ultra-)Schall
 Geschwindigkeit von Untraschall in Luft
+
     Mach 1 = 1234,8 km/h = 343 m/s
 
 ### 3 e)
