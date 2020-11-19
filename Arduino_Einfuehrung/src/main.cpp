@@ -50,6 +50,26 @@ void setSimpleLED(int value)
   }
 }
 
+void setComplexLED(int pin, int mappedVal, int begin, int end){
+  if (mappedVal >= begin)
+  {
+    double val = mappedVal - begin;
+    double m = map(val, 0, end - begin, 0, 255);
+    if (val > 0)
+#ifdef USE_PWM
+      analogWrite(pin, m);
+#else
+      digitalWrite(pin, HIGH);
+#endif
+#ifdef SERIAL_DEBUG
+    Serial.print(m);
+#endif
+  }
+#ifdef SERIAL_DEBUG
+  Serial.println();
+#endif
+}
+
 //get Distance from ultrasonic Sensor
 double getDistance()
 {
@@ -94,60 +114,8 @@ void loop()
   //Smooth transition between three leds
   double mappedVal = map(dist, 0, 37, 0, 370);
   allLED(LOW);
-  //red
-  if (mappedVal >= RED_BEGIN && mappedVal <= RED_END)
-  {
-    double val = mappedVal - RED_BEGIN;
-    double m = map(val, 0, RED_END - RED_BEGIN, 0, 255);
-    if (val > 0)
-#ifdef USE_PWM
-      analogWrite(RED, m);
-#else
-      digitalWrite(RED, HIGH);
-#endif
-#ifdef SERIAL_DEBUG
-    Serial.print(m);
-#endif
-  }
-#ifdef SERIAL_DEBUG
-  Serial.print("\t");
-#endif
 
-  //yellow
-  if (mappedVal >= YELLOW_BEGIN && mappedVal <= YELLOW_END)
-  {
-    double val = mappedVal - YELLOW_BEGIN;
-    double m = map(val, 0, YELLOW_END - YELLOW_BEGIN, 0, 255);
-    if (val > 0)
-#ifdef USE_PWM
-      analogWrite(YELLOW, m);
-#else
-      digitalWrite(YELLOW, HIGH);
-#endif
-#ifdef SERIAL_DEBUG
-    Serial.print(m);
-#endif
-  }
-#ifdef SERIAL_DEBUG
-  Serial.print("\t");
-#endif
-
-  //green
-  if (mappedVal >= GREEN_BEGIN)
-  {
-    double val = mappedVal - GREEN_BEGIN;
-    double m = map(val, 0, GREEN_END - GREEN_BEGIN, 0, 255);
-    if (val > 0)
-#ifdef USE_PWM
-      analogWrite(GREEN, m);
-#else
-      digitalWrite(GREEN, HIGH);
-#endif
-#ifdef SERIAL_DEBUG
-    Serial.print(m);
-#endif
-  }
-#ifdef SERIAL_DEBUG
-  Serial.println();
-#endif
+  setComplexLED(RED, mappedVal, RED_BEGIN, RED_END);
+  setComplexLED(YELLOW, mappedVal, YELLOW_BEGIN, YELLOW_END);
+  setComplexLED(GREEN, mappedVal, GREEN_BEGIN, GREEN_END);
 }
