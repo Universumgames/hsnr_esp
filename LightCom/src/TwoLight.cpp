@@ -100,6 +100,10 @@ void TwoLight::print(char c)
 
 void TwoLight::print(String s)
 {
+    Serial.print("Sending ");
+    Serial.print(s.length());
+    Serial.print(" Bytes: ");
+    Serial.println(s);
     //get chars from string
     const char* chars = s.c_str();
     for (unsigned int i = 0; i < s.length(); i++)
