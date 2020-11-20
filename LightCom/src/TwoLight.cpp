@@ -7,6 +7,11 @@ void onRXInterrupt()
     Light.onRecieve();
 }
 
+void onRXInterruptEnd()
+{
+    Light.onRecieveEnd();
+}
+
 TwoLight::TwoLight()
 {
 }
@@ -21,6 +26,7 @@ void TwoLight::begin(LightComPins pinConf)
     pinMode(pinConfig.tx_data, OUTPUT);
 
     attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock), onRXInterrupt, FALLING);
+    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock), onRXInterruptEnd, RISING);
 
     digitalWrite(pinConfig.tx_clock, LOW);
     digitalWrite(pinConfig.tx_data, LOW);
@@ -28,31 +34,34 @@ void TwoLight::begin(LightComPins pinConf)
 
 void TwoLight::onRecieve()
 {
-    long long delta = millis() - lastMessageMillis;
-    if(delta >= TWO_LIGHT_BIT_TIMEOUT){
-        if(delta >= TWO_LIGHT_BIT_TIMEOUT && currentBit != 0)
-            Serial.println("Byte Timeout");
-        else Serial.println();
-        currentBit = 0;
-        b = 0x0;
-    }
-
     int dataVal = !digitalRead(pinConfig.rx_data);
-    bitWrite(b, currentBit, dataVal);
+    bitWrite(tempB, currentBit, dataVal);
     Serial.print(dataVal);
-    if(currentBit >= 7){
-        Serial.write(b);
-        Serial.println();
-        currentBit = 0;
-        b = 0x0;
-    }
-    currentBit++;
-    
-    lastMessageMillis = millis();
-    
 }
 
-void TwoLight::write(bool val){
+void TwoLight::onRecieveEnd()
+{
+    unsigned long delta = millis() - lastMillis;
+    if (delta > 100)
+    {
+        b = tempB;
+        currentBit--;
+        if (currentBit < 0)
+        {
+            Serial.print(": ");
+            Serial.write(tempB);
+            Serial.print(": ");
+            Serial.print(tempB, BIN);
+            Serial.println();
+            currentBit = 7;
+            b = 0x0;
+        }
+        lastMillis = millis();
+    }
+}
+
+void TwoLight::write(bool val)
+{
     digitalWrite(pinConfig.tx_data, val);
     digitalWrite(pinConfig.tx_clock, HIGH);
     delay(TWO_LIGHT_DURATION_STATE);
@@ -61,11 +70,13 @@ void TwoLight::write(bool val){
     delay(TWO_LIGHT_BITWISE_DELAY);
 }
 
-void TwoLight::print(char c){
+void TwoLight::print(char c)
+{
     //LSB als erstes
     Serial.print(c);
     Serial.print(":");
-    for(int i = 7; 0 <= i; i --){
+    for (int i = 7; 0 <= i; i--)
+    {
         bool bit = bitRead(c, i);
         write(bit);
         Serial.print(bit);
@@ -73,10 +84,12 @@ void TwoLight::print(char c){
     delay(TWO_LIGHT_BYTE_DELAY);
 }
 
-void TwoLight::print(String s){
+void TwoLight::print(String s)
+{
     byte buffer[s.length()];
     s.getBytes(buffer, s.length());
-    for(unsigned int i = 0; i < s.length(); i++){
+    for (unsigned int i = 0; i < s.length(); i++)
+    {
         print(buffer[i]);
     }
     Serial.println();

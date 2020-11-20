@@ -16,13 +16,15 @@ public:
     TwoLight();
     void begin(LightComPins pinConfig);
     void onRecieve();
+    void onRecieveEnd();
     void write(bool val);
     void print(char c);
     void print(String s);
 private:
-    unsigned short currentBit = 0;
-    long long lastMessageMillis = 0;
+    short currentBit = 0;
+    long long lastMillis = 0;
     byte b = 0x0;
+    byte tempB = 0x0;
     LightComPins pinConfig;
 };
 
