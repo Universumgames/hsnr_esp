@@ -2,14 +2,13 @@
 
 TwoLight Light = TwoLight();
 
-void onRXInterrupt()
-{
-    Light.onRecieve();
-}
-
-void onRXInterruptEnd()
+void onRXInterruptRising()
 {
     Light.onRecieveEnd();
+}
+
+void onRXInterruptFalling(){
+    Light.onRecieve();
 }
 
 TwoLight::TwoLight()
@@ -20,13 +19,14 @@ void TwoLight::begin(LightComPins pinConf)
 {
     this->pinConfig = pinConf;
 
-    pinMode(pinConfig.rx_clock, INPUT);
+    pinMode(pinConfig.rx_clock_0, INPUT);
+    pinMode(pinConfig.rx_clock_1, INPUT);
     pinMode(pinConfig.rx_data, INPUT);
     pinMode(pinConfig.tx_clock, OUTPUT);
     pinMode(pinConfig.tx_data, OUTPUT);
 
-    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock), onRXInterrupt, FALLING);
-    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock), onRXInterruptEnd, RISING);
+    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_0), onRXInterruptRising, RISING);
+    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_1), onRXInterruptFalling, FALLING);
 
     digitalWrite(pinConfig.tx_clock, LOW);
     digitalWrite(pinConfig.tx_data, LOW);
@@ -36,28 +36,30 @@ void TwoLight::onRecieve()
 {
     int dataVal = !digitalRead(pinConfig.rx_data);
     bitWrite(tempB, currentBit, dataVal);
-    Serial.print(dataVal);
 }
 
 void TwoLight::onRecieveEnd()
 {
     unsigned long delta = millis() - lastMillis;
-    if (delta > 100)
+    if (delta > TWO_LIGHT_MIN_SIGNAL_DUR)
     {
         b = tempB;
+        Serial.print(bitRead(b, currentBit));
         currentBit--;
         if (currentBit < 0)
         {
             Serial.print(": ");
-            Serial.write(tempB);
+            Serial.write(b);
             Serial.print(": ");
-            Serial.print(tempB, BIN);
+            Serial.print(b, BIN);
             Serial.println();
             currentBit = 7;
             b = 0x0;
         }
+        digitalWrite(7, LOW);
         lastMillis = millis();
-    }
+    }else tempB = b;
+    
 }
 
 void TwoLight::write(bool val)
@@ -72,7 +74,7 @@ void TwoLight::write(bool val)
 
 void TwoLight::print(char c)
 {
-    //LSB als erstes
+    //MSB als erstes
     Serial.print(c);
     Serial.print(":");
     for (int i = 7; 0 <= i; i--)
@@ -81,16 +83,15 @@ void TwoLight::print(char c)
         write(bit);
         Serial.print(bit);
     }
-    delay(TWO_LIGHT_BYTE_DELAY);
+    //delay(TWO_LIGHT_BYTE_DELAY);
 }
 
 void TwoLight::print(String s)
 {
-    byte buffer[s.length()];
-    s.getBytes(buffer, s.length());
+    const char* chars = s.c_str();
     for (unsigned int i = 0; i < s.length(); i++)
     {
-        print(buffer[i]);
+        print(chars[i]);
     }
     Serial.println();
 }
