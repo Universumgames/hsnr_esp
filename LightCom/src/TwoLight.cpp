@@ -59,7 +59,9 @@ void TwoLight::__recieveInterruptEnd()
     if (delta > TWO_LIGHT_MIN_SIGNAL_DUR)
     {
         b = tempB;
-        bitCallback(bitRead(b, currentBit));
+        bool bit = bitRead(b, currentBit);
+        if(bitCallback)
+            bitCallback(bit);
         currentBit--;
         //if full byte was recieved
         if (currentBit < 0)
@@ -105,14 +107,18 @@ void TwoLight::print(String s)
         print(chars[i]);
     }
 }
+
 void TwoLight::processChar(char c){
     //call char callback
-    charCallback(c);
+    if(charCallback)
+        charCallback(c);
+    Serial.print(c);
     lineByteCount++;
-    currentLine += String(b);
+    currentLine = currentLine + char(b);
     //after line finished, call line callback and reset for new line to recieve
     if(b == '\n'){
-        lineCallback(currentLine, lineByteCount);
+        if(lineCallback)
+            lineCallback(currentLine, lineByteCount);
         currentLine = "";
         lineByteCount = 0;
     }
