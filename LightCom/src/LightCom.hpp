@@ -8,7 +8,9 @@ class LightCom
 {
 public:
     LightCom();
+    //light com setup method
     void setup();
+    //light com loop method
     void loop();
 private:
 };
