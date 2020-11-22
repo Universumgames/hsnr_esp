@@ -40,6 +40,8 @@ public:
     void __recieveInterruptStart();
     //internal interrupt callback method
     void __recieveInterruptEnd();
+
+    void loop();
 private: 
     //write binary value to stream
     void write(bool val);
@@ -54,6 +56,7 @@ private:
     LightComPins pinConfig;
     signed int lineByteCount = 0;
     String currentLine = "";
+    bool lastClockState = 0;
 
     //callback methods
     void (*lineCallback)(String, int);

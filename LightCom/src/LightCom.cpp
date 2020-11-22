@@ -1,7 +1,8 @@
 #include "LightCom.hpp"
 
 //global, non-class method to recieve interrupt
-void callback(String line, int bytes){
+void callback(String line, int bytes)
+{
     Serial.println();
     Serial.println(line);
     Serial.print(bytes);
@@ -28,7 +29,11 @@ void LightCom::setup()
 
 void LightCom::loop()
 {
-    String input = Serial.readString();
-    if (input != "\n" && input != "" && input != " ")
-        Light.print(input);
+    Light.loop();
+    if (Serial.available())
+    {
+        String input = Serial.readString();
+        if (input != "\n" && input != "" && input != " ")
+            Light.print(input);
+    }
 }

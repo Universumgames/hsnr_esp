@@ -28,12 +28,23 @@ void TwoLight::begin(LightComPins pinConf)
     pinMode(pinConfig.tx_data, OUTPUT);
 
     //attach Interrupts, RISING and FALLING to debounce signal
-    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_0), onRXInterruptRising, RISING);
-    attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_1), onRXInterruptFalling, FALLING);
+    //attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_0), onRXInterruptRising, RISING);
+    //attachInterrupt(digitalPinToInterrupt(pinConfig.rx_clock_1), onRXInterruptFalling, FALLING);
 
     //just to make sure, set both tx pins to low
     digitalWrite(pinConfig.tx_clock, LOW);
     digitalWrite(pinConfig.tx_data, LOW);
+}
+
+void TwoLight::loop(){
+    bool state = !digitalRead(pinConfig.rx_clock_0);
+    if(state != lastClockState){
+        lastClockState = state;
+        if(state == HIGH)
+            __recieveInterruptStart();
+        else
+            __recieveInterruptEnd();
+    }
 }
 
 void TwoLight::__recieveInterruptStart()
@@ -43,10 +54,12 @@ void TwoLight::__recieveInterruptStart()
     int dataVal = !digitalRead(pinConfig.rx_data);
     //write single bit into temporary byte at location currentBit (it's saved temporary to debounce signal lateron)
     bitWrite(tempB, currentBit, dataVal);
+    //Serial.println("start");
 }
 
 void TwoLight::__recieveInterruptEnd()
 {
+    //Serial.println("end");
     unsigned long delta = millis() - lastMillis;
     //ensure, that no random bit was dropped
     if(delta > TWO_LIGHT_BYTE_TIMEOUT){
@@ -54,12 +67,14 @@ void TwoLight::__recieveInterruptEnd()
         tempB = 0x0;
         currentBit = 7;
         bitWrite(tempB, currentBit, curBit);
+        Serial.println("Timeout");
     }
     //"debounce", lm393 generates some random voltage peaks, this and latency of leds and resistor limits transmission speeeds significantly
     if (delta > TWO_LIGHT_MIN_SIGNAL_DUR)
     {
         b = tempB;
         bool bit = bitRead(b, currentBit);
+        Serial.print(bit);
         if(bitCallback)
             bitCallback(bit);
         currentBit--;
@@ -71,8 +86,10 @@ void TwoLight::__recieveInterruptEnd()
             b = 0x0;
         }
         lastMillis = millis();
-    }else //delete data pin read, due to false alarm, see debounce
+    }else{ //delete data pin read, due to false alarm, see debounce
         tempB = b;
+        Serial.println(delta);
+    }
 }
 
 void TwoLight::write(bool val)
