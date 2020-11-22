@@ -70,11 +70,10 @@ void TwoLight::__recieveInterruptEnd()
         Serial.println("Timeout");
     }
     //"debounce", lm393 generates some random voltage peaks, this and latency of leds and resistor limits transmission speeeds significantly
-    if (delta > TWO_LIGHT_MIN_SIGNAL_DUR)
+    if (delta >= TWO_LIGHT_MIN_SIGNAL_DUR)
     {
         b = tempB;
         bool bit = bitRead(b, currentBit);
-        Serial.print(bit);
         if(bitCallback)
             bitCallback(bit);
         currentBit--;
@@ -86,19 +85,19 @@ void TwoLight::__recieveInterruptEnd()
             b = 0x0;
         }
         lastMillis = millis();
-    }else{ //delete data pin read, due to false alarm, see debounce
+    }else //delete data pin read, due to false alarm, see debounce
         tempB = b;
-        Serial.println(delta);
-    }
 }
 
 void TwoLight::write(bool val)
 {
     //I2C adaptation (two channels: clock, data)
     digitalWrite(pinConfig.tx_data, val);
+    delay(10);
     digitalWrite(pinConfig.tx_clock, HIGH);
     delay(TWO_LIGHT_DURATION_STATE);
     digitalWrite(pinConfig.tx_clock, LOW);
+    delay(5);
     digitalWrite(pinConfig.tx_data, LOW);
     delay(TWO_LIGHT_BITWISE_DELAY);
 }
