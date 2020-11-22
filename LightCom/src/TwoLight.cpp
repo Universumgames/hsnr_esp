@@ -67,7 +67,8 @@ void TwoLight::__recieveInterruptEnd()
         tempB = 0x0;
         currentBit = 7;
         bitWrite(tempB, currentBit, curBit);
-        Serial.println("Timeout");
+        if(lastChar != '\n')
+            Serial.println("Timeout");
     }
     //"debounce", lm393 generates some random voltage peaks, this and latency of leds and resistor limits transmission speeeds significantly
     if (delta >= TWO_LIGHT_MIN_SIGNAL_DUR)
@@ -93,7 +94,7 @@ void TwoLight::write(bool val)
 {
     //I2C adaptation (two channels: clock, data)
     digitalWrite(pinConfig.tx_data, val);
-    delay(10);
+    delay(5);
     digitalWrite(pinConfig.tx_clock, HIGH);
     delay(TWO_LIGHT_DURATION_STATE);
     digitalWrite(pinConfig.tx_clock, LOW);
@@ -133,6 +134,7 @@ void TwoLight::processChar(char c){
     if(charCallback)
         charCallback(c);
     Serial.print(c);
+    lastChar = c;
     lineByteCount++;
     currentLine = currentLine + char(b);
     //after line finished, call line callback and reset for new line to recieve

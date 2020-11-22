@@ -57,6 +57,7 @@ private:
     signed int lineByteCount = 0;
     String currentLine = "";
     bool lastClockState = 0;
+    char lastChar = '\n';
 
     //callback methods
     void (*lineCallback)(String, int);

@@ -7,6 +7,7 @@ void callback(String line, int bytes)
     Serial.println(line);
     Serial.print(bytes);
     Serial.println(" Bytes recieved in current line");
+    Serial.println("Waiting for new signal....");
 }
 
 LightCom com = LightCom();
