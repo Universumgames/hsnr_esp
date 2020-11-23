@@ -13,7 +13,7 @@ To use our project, open the platformIO project, change the `upload_port` in `pl
 ![Schematic](Schematic_schem.png)
 
 ## Usage
-1. Once uploaded, the arduino can communicate with another one as long as they are in LOS (Line of sight) and pointing directly at each other.
-2. Once placed correctly, you can start to open a serial monitor. You could use the integrated serial monitor in PlatformIO, the integrated serial monitor in the [Arduino IDE](https://www.arduino.cc/en/software) or [Putty](https://www.putty.org/), a great tool for using all kinds of connectivity like serial, ssh, raw, Telnet and Rlogin, or one of it's successors.
-3. Select the Port your Arduino is plugged into, select the baud rate your arduino is sending/recieving to/from the serial monitor (the default is `115200`, but can be easily changed in `config.hpp`)
+1. Once uploaded, the arduino can communicate with another one as long as they are in LOS (Line of sight) and pointing directly at each other. The photoresistor should be facing the leds, to achieve that, the legs problably have to be bent.
+2. Once placed correctly, you can start to open a serial monitor. You could use the integrated serial monitor in PlatformIO, the integrated serial monitor in the [Arduino IDE](https://www.arduino.cc/en/software) or [Putty](https://www.putty.org/), a great tool for using all kinds of connectivity like Serial, SSH, Raw, Telnet and Rlogin, or one of it's successors.
+3. Select the Port your Arduino is plugged into, select the baud rate your arduino is sending/recieving to/from the serial monitor (the default is `9600`, but can be easily changed in `config.hpp`)
 4. If everything works, you should be able to recieve encoded message from another Arduino and read the decoded result in your terminal, as well as write a message yourself and send it to the other Arduino.
