@@ -9,8 +9,8 @@ This project was created with PlatformIO, an extension for VS Code to write Ardu
 
 To use our project, open the platformIO project, change the `upload_port` in `platformio.ini` to the port your arduino is plugged into and upload the program.
 
-![Wiring](Schematic.png | width = 500)
-![Schematic](Schematic_schem.png | width = 500)
+![Wiring](Schematic.png)
+![Schematic](Schematic_schem.png)
 
 ## Usage
 1. Once uploaded, the arduino can communicate with another one as long as they are in LOS (Line of sight) and pointing directly at each other.
