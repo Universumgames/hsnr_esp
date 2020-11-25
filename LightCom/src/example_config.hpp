@@ -15,6 +15,7 @@ if you constribute to this project and you don't have a config.hpp copy this fil
 #define TX_CLOCK_PIN 5
 #define TX_DATA_PIN 6
 
-#define TWO_LIGHT_DURATION_STATE 120
+#define TWO_LIGHT_DURATION_STATE 45
 #define TWO_LIGHT_BITWISE_DELAY TWO_LIGHT_DURATION_STATE
-#define TWO_LIGHT_MIN_SIGNAL_DUR 90
+#define TWO_LIGHT_MIN_SIGNAL_DUR 30
+#define TWO_LIGHT_BYTE_TIMEOUT 500
