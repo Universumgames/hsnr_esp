@@ -22,8 +22,11 @@
 //switch between pwm and default
 #define USE_PWM
 
-//1 = true = HIGH
-//0 = false = LOW
+//1 == true == HIGH
+//0 == false == LOW
+
+int mappedVals[10] = {0};
+int currentIndex = 0;
 
 //set value for all LEDS
 void allLED(bool value)
@@ -50,7 +53,8 @@ void setSimpleLED(int value)
   }
 }
 
-void setComplexLED(int pin, int mappedVal, int begin, int end){
+void setComplexLED(int pin, int mappedVal, int begin, int end)
+{
   if (mappedVal >= begin)
   {
     double val = mappedVal - begin;
@@ -113,9 +117,25 @@ void loop()
 
   //Smooth transition between three leds
   double mappedVal = map(dist, 0, 37, 0, 370);
-  allLED(LOW);
+  mappedVals[currentIndex] = mappedVal;
+  currentIndex++;
 
-  setComplexLED(RED, mappedVal, RED_BEGIN, RED_END);
-  setComplexLED(YELLOW, mappedVal, YELLOW_BEGIN, YELLOW_END);
-  setComplexLED(GREEN, mappedVal, GREEN_BEGIN, GREEN_END);
+//average of last 10 measurements
+  if (currentIndex >= 9)
+  {
+    currentIndex = 0;
+    double avgVal = 0;
+    for (int i = 0; i <= 9; i++)
+    {
+      avgVal += mappedVals[i];
+    }
+    avgVal /= 9;
+    //set all LEDs off
+    allLED(LOW);
+
+    //set all three leds with pwm
+    setComplexLED(RED, avgVal, RED_BEGIN, RED_END);
+    setComplexLED(YELLOW, avgVal, YELLOW_BEGIN, YELLOW_END);
+    setComplexLED(GREEN, avgVal, GREEN_BEGIN, GREEN_END);
+  }
 }
