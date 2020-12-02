@@ -20,11 +20,9 @@ public:
     //IMPORTANT: rx_clock_0 and rx_clock_1 has to be interupt pins
     void begin(LightComPins pinConfig);
     
-    //print single character to stream
-    void print(char c);
     //print a string to stream
-    //IMPORTANT: reciever will probably only recieve the message properly after line-eending (\n)
-    void print(String s);
+    //IMPORTANT: reciever will probably only recieve the message properly after line-ending (\n)
+    void println(String s);
 
     //Callback Method, is called after a line is recieved
     //Parameters for Callback: String line, int bytes in Line
@@ -45,6 +43,8 @@ public:
 private: 
     //write binary value to stream
     void write(bool val);
+    //print single character to stream
+    void print(char c);
 
     //process recieved char
     void processChar(char c);

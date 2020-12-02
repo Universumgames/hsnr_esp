@@ -8,7 +8,8 @@ void onRXInterruptRising()
     Light.__recieveInterruptEnd();
 }
 //global, non-class method to recieve interrupt
-void onRXInterruptFalling(){
+void onRXInterruptFalling()
+{
     Light.__recieveInterruptStart();
 }
 
@@ -36,11 +37,13 @@ void TwoLight::begin(LightComPins pinConf)
     digitalWrite(pinConfig.tx_data, LOW);
 }
 
-void TwoLight::loop(){
+void TwoLight::loop()
+{
     bool state = !digitalRead(pinConfig.rx_clock_0);
-    if(state != lastClockState){
+    if (state != lastClockState)
+    {
         lastClockState = state;
-        if(state == HIGH)
+        if (state == HIGH)
             __recieveInterruptStart();
         else
             __recieveInterruptEnd();
@@ -62,12 +65,13 @@ void TwoLight::__recieveInterruptEnd()
     //Serial.println("end");
     unsigned long delta = millis() - lastMillis;
     //ensure, that no random bit was dropped
-    if(delta > TWO_LIGHT_BYTE_TIMEOUT){
+    if (delta > TWO_LIGHT_BYTE_TIMEOUT)
+    {
         bool curBit = bitRead(tempB, currentBit);
         tempB = 0x0;
         currentBit = 7;
         bitWrite(tempB, currentBit, curBit);
-        if(lastChar != '\n')
+        if (lastChar != '\n')
             Serial.println("Timeout");
     }
     //"debounce", lm393 generates some random voltage peaks, this and latency of leds and resistor limits transmission speeeds significantly
@@ -75,7 +79,7 @@ void TwoLight::__recieveInterruptEnd()
     {
         b = tempB;
         bool bit = bitRead(b, currentBit);
-        if(bitCallback)
+        if (bitCallback)
             bitCallback(bit);
         currentBit--;
         //if full byte was recieved
@@ -86,7 +90,8 @@ void TwoLight::__recieveInterruptEnd()
             b = 0x0;
         }
         lastMillis = millis();
-    }else //delete data pin read, due to false alarm, see debounce
+    }
+    else //delete data pin read, due to false alarm, see debounce
         tempB = b;
 }
 
@@ -115,45 +120,53 @@ void TwoLight::print(char c)
     }
 }
 
-void TwoLight::print(String s)
+void TwoLight::println(String s)
 {
+    int index = 0;
+    if ((index = s.indexOf('\n')) == -1)
+        s.concat('\n');
     Serial.print("Sending ");
     Serial.print(s.length());
     Serial.print(" Bytes: ");
     Serial.println(s);
     //get chars from string
-    const char* chars = s.c_str();
+    const char *chars = s.c_str();
     for (unsigned int i = 0; i < s.length(); i++)
     {
         print(chars[i]);
     }
 }
 
-void TwoLight::processChar(char c){
+void TwoLight::processChar(char c)
+{
     //call char callback
-    if(charCallback)
+    if (charCallback)
         charCallback(c);
     Serial.print(c);
     lastChar = c;
     lineByteCount++;
     currentLine = currentLine + char(b);
     //after line finished, call line callback and reset for new line to recieve
-    if(b == '\n'){
-        if(lineCallback)
+    if (b == '\n')
+    {
+        if (lineCallback)
             lineCallback(currentLine, lineByteCount);
         currentLine = "";
         lineByteCount = 0;
     }
 }
 
-void TwoLight::setLineRecievedCallback(void (*lineCallback)(String, int)){
+void TwoLight::setLineRecievedCallback(void (*lineCallback)(String, int))
+{
     this->lineCallback = lineCallback;
 }
 
-void TwoLight::setCharRecievedCallback(void (*charCallback)(char)){
+void TwoLight::setCharRecievedCallback(void (*charCallback)(char))
+{
     this->charCallback = charCallback;
 }
 
-void TwoLight::setBitRecievedCallback(void (*bitCallback)(bool)){
+void TwoLight::setBitRecievedCallback(void (*bitCallback)(bool))
+{
     this->bitCallback = bitCallback;
 }

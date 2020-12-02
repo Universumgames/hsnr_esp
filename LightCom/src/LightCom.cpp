@@ -1,13 +1,17 @@
 #include "LightCom.hpp"
 
 //global, non-class method to recieve interrupt
-void callback(String line, int bytes)
+void lineCallback(String line, int bytes)
 {
     Serial.println();
     Serial.println(line);
     Serial.print(bytes);
     Serial.println(" Bytes recieved in current line");
     Serial.println("Waiting for new signal....");
+}
+
+void bitCallback(bool bit){
+    Serial.print(bit);
 }
 
 LightCom com = LightCom();
@@ -25,7 +29,8 @@ void LightCom::setup()
     pins.tx_clock = TX_CLOCK_PIN;
     pins.tx_data = TX_DATA_PIN;
     Light.begin(pins);
-    Light.setLineRecievedCallback(callback);
+    Light.setLineRecievedCallback(lineCallback);
+    Light.setBitRecievedCallback(bitCallback);
 }
 
 void LightCom::loop()
@@ -35,6 +40,6 @@ void LightCom::loop()
     {
         String input = Serial.readString();
         if (input != "\n" && input != "" && input != " ")
-            Light.print(input);
+            Light.println(input);
     }
 }
