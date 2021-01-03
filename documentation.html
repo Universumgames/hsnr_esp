@@ -385,14 +385,117 @@ Die notwendigen Bauteile wurden uns hierfür pro Person von der Hochschule zur v
 <li><s>1x Ultraschallsensor</s></li>
 </ul>
 <p>Da der Wissensstand innerhalb der Gruppe zum Thema Arduino sehr verscheiden war, wurde nur zeitgleich und immer gemeinsam gearbeitet. Die Teilenhmer, welche bereits einiges an Erfahrung mit sich brachten, fungierten eher als Lehrperson, die den anderen das Nötige Wissen überschaubar vermittelt haben, sodass alle dann gemeinsam die Aufageb bearbeiten konnten.</p>
-<h2 id="umsetzung">Umsetzung</h2>
-<p>Die Kommunikation der beiden Arduinos basiert auf bereits existierenden und in jedem Microchip Hardwareimplementierten Protokoll namens <code>I2C</code>. Bei diesem Protokoll ist in der Regel ein &quot;Master&quot; deklariert und mehrere &quot;Slaves&quot; welche alle gemeinsam an zwei Datenleitungen angeschlossen sind: &quot;Data&quot; und &quot;Clock&quot;. Immer wenn die Spannung auf &quot;Clock&quot; von 0V auf 3.3/5V ändert wird auf &quot;Data&quot; der Zustand (Bit) abgelesen, bis sich letztendlich, nach einigen Takten ein Byte (8 Bit) ergeben. Das Standardprotokoll arbeitet eigentlich mit Adressen um zu differnezieren an wen und von wem die Nachricht gesendet wurde. <br>
+<h2 id="l%C3%B6sung-der-aufgabe">Lösung der Aufgabe</h2>
+<h3 id="strategie">Strategie</h3>
+<p>Das Entwickeln der Strategie für die Kommunikation, zu versuchen bereits bestehende Protokolle (als Basis) zu verwenden, war schnell erledigt. Der Versuch die Nativen Protokolle des Arduinos zu verwenden scheiterte jedoch schnell, da alle Standardprotokolle viel zu schnell sind um mit LEDs verwendet werden zu können. Hinzukommt, dass uns zunächst entangen ist, dass der LM392 das Signal negiert ausgibt, welches uns erst einiges später auffiel. Schließlich entschlossen wir uns für eine serielle Kommunikation auf Basis des Protokolls <a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a>. Dieses Protokoll ist bei fast jedem modernen Microprocessor Hardwaremäßig implementiert für eine schneller Kommunikation. Bei diesem Protokoll ist in der Regel ein &quot;Master&quot; deklariert und mehrere &quot;Slaves&quot; welche alle gemeinsam an zwei Datenleitungen angeschlossen sind: &quot;Data&quot; und &quot;Clock&quot;. Immer wenn die Spannung auf &quot;Clock&quot; von 0V auf 3.3/5V ändert wird auf &quot;Data&quot; der Zustand (Bit) abgelesen, bis sich letztendlich, nach einigen Takten ein Byte (8 Bit) ergeben. Das Standardprotokoll arbeitet eigentlich mit Adressen um zu differnezieren an wen und von wem die Nachricht gesendet wurde. <br>
 Unser Protokoll übernimmt dabei nur das Prinzip von &quot;Data&quot; und &quot;Clock&quot;, somit kann ein Empfangsmodul nur mit einem Sendermodul verbunden werden und vice versa.</p>
-<p>Hier einmal die Schematics in der Arduino Schematic Software <a href="https://fritzing.org/">fritzing</a>
+<h3 id="unsere-hardware-schematics">Unsere Hardware (Schematics)</h3>
+<p>Hier einmal die Schematics in der Arduino Schematic Software <a href="https://fritzing.org/">fritzing</a><br>
 <img src="Schematic.png" width="70%" heigth="auto">
 <img src="Schematic_schem.png" width="70%" heigth="auto"></p>
 <p>In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gestekct werden kann.
 Dargestellt wurde hier ein einzelner Arduino, der in der lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.</p>
+<h3 id="software">Software</h3>
+<p>Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier niur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">//declare variables</span>
+<span class="hljs-keyword">int</span> sender_clock = <span class="hljs-number">6</span>;
+<span class="hljs-keyword">int</span> sender_data = <span class="hljs-number">7</span>;
+<span class="hljs-keyword">int</span> reciever_clock = <span class="hljs-number">4</span>;
+<span class="hljs-keyword">int</span> reciever_data = <span class="hljs-number">3</span>;
+<span class="hljs-keyword">int</span> incomingByte = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> reciever_clock_2 = <span class="hljs-number">2</span>;
+<span class="hljs-keyword">long</span> <span class="hljs-keyword">long</span> last_millis = <span class="hljs-number">0</span>;
+byte temp;
+<span class="hljs-keyword">int</span> recieve_index = <span class="hljs-number">7</span>;
+byte b;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-comment">//attach Interrupts to not having to worry about reading from one pin</span>
+  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_start, FALLING);
+  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_end, RISING);
+  <span class="hljs-comment">//initialize Serial Monitor</span>
+  Serial.begin(<span class="hljs-number">9600</span>);
+  <span class="hljs-comment">//set pin modes</span>
+  pinMode(sender_clock, OUTPUT);
+  pinMode(sender_data, OUTPUT);
+  pinMode(reciever_clock, INPUT);
+  pinMode(reciever_data, INPUT);
+  pinMode(reciever_clock_2, INPUT);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-comment">//check if serial queue contains items</span>
+  <span class="hljs-keyword">if</span> (Serial.available() &gt; <span class="hljs-number">0</span>)
+  {
+    <span class="hljs-comment">//read incoming byte (charactere)</span>
+    incomingByte = Serial.read();
+    <span class="hljs-comment">//send each bit seperately to serial monitor for debugging and to other arduino</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">7</span>; i &gt;= <span class="hljs-number">0</span>; i--)
+    {
+      Serial.print(bitRead(incomingByte, i));
+      sendBit(bitRead(incomingByte, i));
+    }
+    Serial.println();
+  }
+}
+
+<span class="hljs-comment">//read incoming bits</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">clock_interrupt_start</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-keyword">bool</span> dataval = !digitalRead(reciever_data);
+  bitWrite(temp, recieve_index, dataval);
+}
+
+<span class="hljs-comment">//verify incoming bit</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">clock_interrupt_end</span><span class="hljs-params">()</span>
+</span>{
+  <span class="hljs-comment">//calculate delta since clock fell, to check for hazards</span>
+  <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> delta = millis() - last_millis;
+  <span class="hljs-comment">//if delta &gt; 100ms, it's nit a hazard or glitch from the photoresistor</span>
+  <span class="hljs-keyword">if</span> (delta &gt; <span class="hljs-number">100</span>)
+  {
+    <span class="hljs-comment">//write temporary byte to "longterm" byte</span>
+    b = temp;
+    <span class="hljs-comment">//reduce recieve index to move to next bit</span>
+    recieve_index--;
+    <span class="hljs-comment">//if recieve_index &lt; 0 we have successfully recieved a byte and print that to the serial monitor</span>
+    <span class="hljs-keyword">if</span> (recieve_index &lt; <span class="hljs-number">0</span>)
+    {
+      Serial.print(b);
+      <span class="hljs-comment">//reset recieving variables to default state</span>
+      recieve_index = <span class="hljs-number">7</span>;
+      b = <span class="hljs-number">0x0</span>;
+    }
+    <span class="hljs-comment">//reset for delta caluclation</span>
+    last_millis = millis();
+  }
+  <span class="hljs-keyword">else</span>
+  {
+    <span class="hljs-comment">//if a glitch was detected, delete temporarily recieved bit</span>
+    temp = b;
+  }
+}
+
+<span class="hljs-comment">//send single bit</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">sendBit</span><span class="hljs-params">(<span class="hljs-keyword">bool</span> bitt)</span>
+</span>{
+  <span class="hljs-comment">//change data pin</span>
+  digitalWrite(sender_data, bitt);
+  delayMicroseconds(<span class="hljs-number">10</span>);
+  <span class="hljs-comment">//change clock to HIGH</span>
+  digitalWrite(sender_clock, HIGH);
+  <span class="hljs-comment">//wait to be able to differentiate between valid bit and a hazard</span>
+  delayMicroseconds(<span class="hljs-number">500</span>);
+  <span class="hljs-comment">//change both pins to default state</span>
+  digitalWrite(sender_clock, LOW);
+  digitalWrite(sender_data, LOW);
+  delayMicroseconds(<span class="hljs-number">5</span>);
+}
+</div></code></pre>
+<p>Link zum Aktuellen Programmcode: <a href="https://github.com/Universumgames/hsnr_esp/tree/master/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/master/LightCom">IDE3</a> <br>
+Link zum aufbereiteten/alternativen Code (eigenständig entwicklet von Tom Arlt):  <a href="https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom">IDE3</a></p>
 <h2 id="verwendung">Verwendung</h2>
 <p>(Übersetzt und aufbereitet aus <a href="Readme.md">Readme.md</a>)
 Um unser Projekt zu verwenden, müssen zwei Schaltungen aufgebaut sein, wobei mindestens zwei LEDs und zwei Empfänger aufgebaut sein müssen um zumindest die Einseitige Kommunikation testen zu können. Zu beachten ist, dass jedes LED-LM392 Paar zu allen anderen Paaren abgeschirmt sein sollte, da es sonst zu Interferrenzen kommen kann. Zudem muss das Potenziometer des LM392 eingestellt werden nur die dazugehörige eingeschaltete LED zu erkennen und nicht das Umgebungslicht. Bei der Erstellung der LED-LM392 Paare ist auf die Unterscheidung zwischen &quot;Data&quot; und &quot;Clock&quot; zu achten:</p>
@@ -404,10 +507,9 @@ reciever_clock  <-> sender_clock
 reciever_data   <-> sender_data
 </pre>
 <p>Ist das Programm einmal auf beiden Arduinos hochgeladen, ist die Arduino IDE (o.ä.) nicht mehr notwending. Nun kann über einen Seriellen Monitor, wie zum Beispiel der Intergrierte der <a href="https://www.arduino.cc/en/software">Arduino IDE</a> oder  <a href="https://www.putty.org/">Putty</a> über den Arduino kommuniziert werden. In diesen Tools muss noch der Port, über den der Arduino angeschlossen ist, angegeben werden, sowie die Baud Rate des Seriellen Monitor, welche in <code>config.hpp</code> eingesehen und verändert werden kann, der Standard ist hier <code>9600</code>.</p>
-<p>Link zum Aktuellen Programmcode: <a href="https://github.com/Universumgames/hsnr_esp/tree/master/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/master/LightCom">IDE3</a> <br>
-Link zum aufbereiteten/alternativen Code (entwicklet von Tom Arlt):  <a href="https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom">IDE3</a></p>
 <h2 id="reflexion">Reflexion</h2>
-<p>Das Entwickeln der Strategie für die Kommunikation war sehr einfach und stand sofort nach dem Leesen deer Aufgabenstellung. Auch das Entwickeln eines grundsätzlichen Gerüsts war straight forward. Das Debuggen sowie ein ordentlicher Aufbau der Schaltung war dann die größere Herausforderung. Da durch ständig wechselnde Lichtverhältnisse der Photoresistor nicht immer wie gewünsch funktionierte, verzögerte sich das Programm-Debuggen ungemein. Erst nach vielen Stunden rumgrübelns, rumschrauben und ausprobieren, stellte sich als einzige zufverlässige Methode eine eigene Blackbox für jedes LED-LM392 Paar heraus.</p>
+<p>Wie schon in <code>Strategie</code> erwähnt, war die grundsätzliche Strategie schnell gefunden, nur das ausarbeiten hat, dank der Rückschläge, etwas länger gedauert.
+Nach den ersten Rücklucken und das festsetzen auf die entgültige Implementationsstrategie war auch das Entwickeln eines ersten Gerüsts relativ straight forward. Das Debuggen sowie ein ordentlicher Aufbau der Schaltung war dann die größere Herausforderung. Da durch ständig wechselnde Lichtverhältnisse der Photoresistor nicht immer wie gewünsch funktionierte, verzögerte sich das Programm-Debuggen ungemein. Erst nach vielen Stunden rumgrübelns, rumschrauben und ausprobieren, stellte sich als einzige zufverlässige Methode eine eigene Blackbox für jedes LED-LM392 Paar heraus.</p>
 <h2 id="zusammenfassung">Zusammenfassung</h2>
 
 </body>
