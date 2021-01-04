@@ -1,0 +1,5 @@
+1. Welche Geschwindigkeit können Sie bei dieser Übertragung maximal erreichen, dass der Code noch sicher entschlüsselt werden kann?
+
+
+2. Welche Störeinflüsse können bei der Internetverbindung auftreten?
+Bildverlust, niedrige Bildwiderholungsrate, Komprimierung, unzureichende Displayhelligkeit, unzureichende Kamerasensitivität

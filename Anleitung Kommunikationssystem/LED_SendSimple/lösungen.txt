@@ -1,0 +1,5 @@
+1. In welchem Zustand befindet sich das Programm unter 2.
+Wenn das Programm sich im Zusatnd 2 befindet, haben wir mindestens einen byte im SerialBuffer und haben mindestens einmal die LED angeschaltet.
+
+2.Warum muss unter 3 die LED ausgeschaltet (digitalWrite(LED, LOW)) werden?
+In Zustand 3 ist die LED noch angeschaltet und sie würde bis zum Eintreffen und Bearbeiten des nächsten Buchstabens eingeschaltet bleiben. So könnte man nicht zwischen einzelnen Buchstaben unterscheiden.

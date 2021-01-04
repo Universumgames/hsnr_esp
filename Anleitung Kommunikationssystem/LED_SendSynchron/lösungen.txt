@@ -1,0 +1,9 @@
+1.Ermitteln Sie die Programm-Laufzeit im Falle des Sendens, berechnen Sie nun bei einer Sendeverzögerung von 25ms (im Flussdiagramm sind es 100ms) wie viele Zeichen pro Sekunde theoretisch übertragen werden können?
+Rechnung: 	((1ms+HalfPeriod+1ms+HalfPeriod)/Bit * 8 + 25ms)/character
+		=>	((202ms/Bit)*8 + 25ms)/character
+		=>	(1016ms + 25ms)/character
+		=>	1041ms/character
+Somit können wir theoretisch ungefähr einen Buchstaben pro Sekunde übertragen.
+
+2. Warum muss die Periodendauer der Clock- und Daten-LED gleich sein?
+Wenn in dieser Aufgabe mit "Periodendauer" die HalfPeriod-Variable gemeint ist. Also, dass an den beiden Positionen, an diesen sie derzeit verwendet wird, derselbe Wert stehen muss, dann müsste die Frage negiert werden. Es muss an diesen beiden Positionen nicht dieselbe Zeit gewartet werden vom Arduino. Da, bei einer ordentliche Programmierung einer Synchronen Datenübertragung, es keine Rolle spielt wie lange die Data und Clock an- oder ausgeschaltet ist.
