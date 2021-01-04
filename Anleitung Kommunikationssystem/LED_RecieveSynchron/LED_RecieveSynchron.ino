@@ -41,12 +41,14 @@ void loop() {
     //iterate thorugh array
     for(int i = 0; i < 8; i++){
       //corrosponding to bitWrite
-      RecievedChar |= BitArray[i] << i;
+      recievedChar |= BitArray[i] << i;
     }
     //reset and print recieved char
     BitCounter = 0;
-    Serial.print(RecievedChar);
-    RecievedChar = 0;
+    Serial.write(recievedChar);
+    Serial.print(recievedChar);
+    Serial.println();
+    recievedChar = 0;
   }
   delay(5);
 }

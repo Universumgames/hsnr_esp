@@ -1,4 +1,4 @@
-# Dokumentation der Arduino Photokommunikation <br><sub>von Tom Arlt, Florian Körwer, Florian Meyer, Henning Müller <br><sub>Hochschule Niederrhein FB03, der 03.01.2021</sub></sub>
+# Dokumentation der Arduino Photokommunikation <br><sub>von Tom Arlt, Florian Körwer, Florian Meyer, Henning Müller, Cong Tai Phan <br><sub>Hochschule Niederrhein FB03, der 03.01.2021</sub></sub>
 
 ## Links
 - [GitHub link](https://github.com/Universumgames/hsnr_esp)
@@ -16,7 +16,7 @@ Die notwendigen Bauteile wurden uns hierfür pro Person von der Hochschule zur v
 - <s>1x Potenziometer</s>
 - <s>1x Ultraschallsensor</s>
 
-Da der Wissensstand innerhalb der Gruppe zum Thema Arduino sehr verscheiden war, wurde nur zeitgleich und immer gemeinsam gearbeitet. Die Teilenhmer, welche bereits einiges an Erfahrung mit sich brachten, fungierten eher als Lehrperson, die den anderen das Nötige Wissen überschaubar vermittelt haben, sodass alle dann gemeinsam die Aufageb bearbeiten konnten.
+Da der Wissensstand innerhalb der Gruppe zum Thema Arduino sehr verscheiden war, wurde nur zeitgleich und immer gemeinsam gearbeitet. Die Teilenhmer, welche bereits einiges an Erfahrung mit sich brachten, fungierten eher als Lehrperson, die den anderen das Nötige Wissen überschaubar vermittelt haben, sodass alle dann gemeinsam die Aufgabe bearbeiten konnten.
 
 ## Lösung der Aufgabe
 ### Strategie
@@ -28,12 +28,12 @@ Hier einmal die Schematics in der Arduino Schematic Software [fritzing](https://
 <img src="Schematic.png" width="70%" heigth="auto">
 <img src="Schematic_schem.png" width="70%" heigth="auto">
 
-In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gestekct werden kann.
-Dargestellt wurde hier ein einzelner Arduino, der in der lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.
+In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gesteckt werden kann.
+Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.
 
 ### Software
 
-Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier niur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.
+Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier nur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.
 
 ```cpp
 //declare variables
@@ -153,6 +153,7 @@ Ist das Programm einmal auf beiden Arduinos hochgeladen, ist die Arduino IDE (o.
 ## Reflexion
 Wie schon in `Strategie` erwähnt, war die grundsätzliche Strategie schnell gefunden, nur das ausarbeiten hat, dank der Rückschläge, etwas länger gedauert.
 Nach den ersten Rücklucken und das festsetzen auf die entgültige Implementationsstrategie war auch das Entwickeln eines ersten Gerüsts relativ straight forward. Das Debuggen sowie ein ordentlicher Aufbau der Schaltung war dann die größere Herausforderung. Da durch ständig wechselnde Lichtverhältnisse der Photoresistor nicht immer wie gewünsch funktionierte, verzögerte sich das Programm-Debuggen ungemein. Erst nach vielen Stunden rumgrübelns, rumschrauben und ausprobieren, stellte sich als einzige zufverlässige Methode eine eigene Blackbox für jedes LED-LM392 Paar heraus. 
+
 
 ## Zusammenfassung
 

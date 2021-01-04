@@ -365,7 +365,7 @@ code {
           : 'default'
     });
   </script>
-<h1 id="dokumentation-der-arduino-photokommunikation-brsubvon-tom-arlt-florian-k%C3%B6rwer-florian-meyer-henning-m%C3%BCller-brsubhochschule-niederrhein-fb03-der-03012021subsub">Dokumentation der Arduino Photokommunikation <br><sub>von Tom Arlt, Florian Körwer, Florian Meyer, Henning Müller <br><sub>Hochschule Niederrhein FB03, der 03.01.2021</sub></sub></h1>
+<h1 id="dokumentation-der-arduino-photokommunikation-brsubvon-tom-arlt-florian-k%C3%B6rwer-florian-meyer-henning-m%C3%BCller-cong-tai-phan-brsubhochschule-niederrhein-fb03-der-03012021subsub">Dokumentation der Arduino Photokommunikation <br><sub>von Tom Arlt, Florian Körwer, Florian Meyer, Henning Müller, Cong Tai Phan <br><sub>Hochschule Niederrhein FB03, der 03.01.2021</sub></sub></h1>
 <h2 id="links">Links</h2>
 <ul>
 <li><a href="https://github.com/Universumgames/hsnr_esp">GitHub link</a></li>
@@ -384,7 +384,7 @@ Die notwendigen Bauteile wurden uns hierfür pro Person von der Hochschule zur v
 <li><s>1x Potenziometer</s></li>
 <li><s>1x Ultraschallsensor</s></li>
 </ul>
-<p>Da der Wissensstand innerhalb der Gruppe zum Thema Arduino sehr verscheiden war, wurde nur zeitgleich und immer gemeinsam gearbeitet. Die Teilenhmer, welche bereits einiges an Erfahrung mit sich brachten, fungierten eher als Lehrperson, die den anderen das Nötige Wissen überschaubar vermittelt haben, sodass alle dann gemeinsam die Aufageb bearbeiten konnten.</p>
+<p>Da der Wissensstand innerhalb der Gruppe zum Thema Arduino sehr verscheiden war, wurde nur zeitgleich und immer gemeinsam gearbeitet. Die Teilenhmer, welche bereits einiges an Erfahrung mit sich brachten, fungierten eher als Lehrperson, die den anderen das Nötige Wissen überschaubar vermittelt haben, sodass alle dann gemeinsam die Aufgabe bearbeiten konnten.</p>
 <h2 id="l%C3%B6sung-der-aufgabe">Lösung der Aufgabe</h2>
 <h3 id="strategie">Strategie</h3>
 <p>Das Entwickeln der Strategie für die Kommunikation, zu versuchen bereits bestehende Protokolle (als Basis) zu verwenden, war schnell erledigt. Der Versuch die Nativen Protokolle des Arduinos zu verwenden scheiterte jedoch schnell, da alle Standardprotokolle viel zu schnell sind um mit LEDs verwendet werden zu können. Hinzukommt, dass uns zunächst entangen ist, dass der LM392 das Signal negiert ausgibt, welches uns erst einiges später auffiel. Schließlich entschlossen wir uns für eine serielle Kommunikation auf Basis des Protokolls <a href="https://en.wikipedia.org/wiki/I%C2%B2C">I2C</a>. Dieses Protokoll ist bei fast jedem modernen Microprocessor Hardwaremäßig implementiert für eine schneller Kommunikation. Bei diesem Protokoll ist in der Regel ein &quot;Master&quot; deklariert und mehrere &quot;Slaves&quot; welche alle gemeinsam an zwei Datenleitungen angeschlossen sind: &quot;Data&quot; und &quot;Clock&quot;. Immer wenn die Spannung auf &quot;Clock&quot; von 0V auf 3.3/5V ändert wird auf &quot;Data&quot; der Zustand (Bit) abgelesen, bis sich letztendlich, nach einigen Takten ein Byte (8 Bit) ergeben. Das Standardprotokoll arbeitet eigentlich mit Adressen um zu differnezieren an wen und von wem die Nachricht gesendet wurde. <br>
@@ -393,10 +393,10 @@ Unser Protokoll übernimmt dabei nur das Prinzip von &quot;Data&quot; und &quot;
 <p>Hier einmal die Schematics in der Arduino Schematic Software <a href="https://fritzing.org/">fritzing</a><br>
 <img src="Schematic.png" width="70%" heigth="auto">
 <img src="Schematic_schem.png" width="70%" heigth="auto"></p>
-<p>In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gestekct werden kann.
-Dargestellt wurde hier ein einzelner Arduino, der in der lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.</p>
+<p>In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gesteckt werden kann.
+Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.</p>
 <h3 id="software">Software</h3>
-<p>Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier niur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.</p>
+<p>Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier nur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.</p>
 <pre class="hljs"><code><div><span class="hljs-comment">//declare variables</span>
 <span class="hljs-keyword">int</span> sender_clock = <span class="hljs-number">6</span>;
 <span class="hljs-keyword">int</span> sender_data = <span class="hljs-number">7</span>;
