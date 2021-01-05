@@ -135,7 +135,7 @@ void sendBit(bool bitt)
 ```
 
 Link zum Aktuellen Programmcode: [Github](https://github.com/Universumgames/hsnr_esp/tree/master/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/master/LightCom) <br>
-Link zum aufbereiteten/alternativen Code (eigenständig entwicklet von Tom Arlt):  [Github](https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom)
+Link zum aufbereiteten/alternativen Code (eigenständig entwickelt von Tom Arlt):  [Github](https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom)
 
 ## Verwendung
 (Übersetzt und aufbereitet aus [Readme.md](Readme.md))
