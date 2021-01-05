@@ -1,0 +1,2 @@
+1. Welcher Zeitbereich der Periode wird durch MeasureClock gemessen? Skizzieren Sie Ihre Antwort.
+MeasureClock gibt die Zeit aus, die benötigt wird um zwei mal ClockCounter bis 100 zählen zu lassen.

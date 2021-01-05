@@ -1,0 +1,5 @@
+1.Beschreiben Sie das Kriterium, anhand dessen das Programm feststellt dass das zu empfangene Zeichen vollständig übertragen wurde?
+Das einzige Kriterium anhand dessen das Programm feststellt ob das zu empfangen Zeichen vollständig übertrageen wurde, ist Zeit. Das Proggramm geht davon aus, dass innerhalb von 30ms ein Zeichen vollständig übertragen wird.
+
+2. Was würde passieren wenn der Wert von MaxValue kleiner wäre als die halbe Periode der Sendeeinheit, d.h. die Zeit der Highphase (LED an) ist kleiner als MaxValue beim Empfänger?
+Dann würde das Zeichen nur unvollständig empfangen werden.

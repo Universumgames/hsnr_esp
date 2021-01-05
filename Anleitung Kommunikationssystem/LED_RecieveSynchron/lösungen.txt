@@ -1,0 +1,6 @@
+1. Wie ist zu verfahren, wenn vor dem Clock-LDR zuerst der Daten-LDR ein High-Signal liefert?
+Unser Programm intereessiert es eigentlich nicht ob der Daten-LDR vor dem Clock-LDR ein HIGH Signal liefert, solange das Signal lange genug auf dem selben Stand bleibt, dass wir es passend auslesen können.
+Wenn wir den Wert nicht korrekt auslesen können, ist der gesamte eingelesen Byte nicht mehr zu gebrauchen
+
+2. Warum muss unter 4 die Variable ReceivedChar = 0 gesetzt werden?
+In 4 muss die Variable RecievedChar auf 0 zurückgesetz werden, da wir beim setzen von RecievedChar den "bitwise or" Operator verwenden und so nach einigen empfangenen Bytes der gesamte RecievedChar nur noch aus 1en bestehen würde.

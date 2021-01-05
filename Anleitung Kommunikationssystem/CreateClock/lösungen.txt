@@ -1,0 +1,10 @@
+1. Welchen positiven Maximal-Wert kann die Variable MaxValue maximal annehmen?
+32,767 (2^15-1)
+
+2.Was würde passieren wenn man die Anweisung unter 1 weglassen würde?
+Die Variable ClockCounter würde nicht mehr zurückgesetzt werden und bei erreichen von MaxValue wird bei jedem loop()-Durchlauf state gewechselt und CLockCounter nicht mehr hochgezählt werden.
+
+3. Wie oft muss die Variable „state“ invertiert werden, um eine vollständige Periode zu erzeugen?
+Zwei mal muss die Variable state invertiert werden.
+Eine Periode ist definiert mit: Bei einer nicht konstanten, aber sich regelmäßig wiederholenden physikalischen Erscheinung ist die Periode das kleinste örtliche oder zeitliche Intervall, nach dem sich der Vorgang wiederholt. (Wikipedia, 04.01.2021)
+Diese Definition ist nach zwei Invertierungen der Variable state erfüllt, da, von einem Ausgangszustand aus gesehen, zweimal eine Spannungsänderung erfolgen muss um wieder bei einem vergleichbaren Zustand wie dem Ausgangszustand anzukommen.

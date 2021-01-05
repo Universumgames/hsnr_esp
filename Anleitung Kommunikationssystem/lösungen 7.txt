@@ -1,0 +1,6 @@
+1. Welche Geschwindigkeit können Sie bei dieser Übertragung maximal erreichen, dass der Code noch sicher entschlüsselt werden kann?
+Da wir es leider nicht geschafft haben die Projekte über digitalee Kommunikationswege zum laufen zu bekommen, können wir nicht viel über die theoretische Übertragungsgeschwindigkeit üder diese sagen. 
+Mit dem optimierten Kommunikationssystem von Herrn Arlt haben wir es geschafft fehlerfrei 12 Bytes in 13,9 Sekunden zu übertragen.  Umgerechnet wären dies 0.86 Bytes/s oder auch 6.9 Bits/s.
+
+2. Welche Störeinflüsse können bei der Internetverbindung auftreten?
+Bildverlust, niedrige Bildwiderholungsrate, Komprimierung, unzureichende Displayhelligkeit, unzureichende Kamerasensitivität
