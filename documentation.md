@@ -28,7 +28,7 @@ Hier einmal die Schematics in der Arduino Schematic Software [fritzing](https://
 <img src="Schematic.png" width="70%" heigth="auto">
 <img src="Schematic_schem.png" width="70%" heigth="auto">
 
-In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind der Formfakor und die Funktion des Nanos, dass er direkt auf ein Breadboard gesteckt werden kann.
+In dieser Schematic wurde der zum Arduino Uno funktionsidentische Arduino nano verwendet und die Grafik übersitchlicher und kompakter zu gestalten. Beide Arduino-versionen besitzen denselben Prozessor (ATmega328P) und dieselben Pins. Die einzigen Unterschiede beider sind zum einen der Formfakor und zum anderen die Möglichkeit des Nanos direkt auf ein Breadboard gesteckt werden kann.
 Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empfangen als auch zu senden, wenn das passend aufgebaute Gegenstück existiert.
 
 ### Software
@@ -148,11 +148,11 @@ reciever_clock  <-> sender_clock
 reciever_data   <-> sender_data
 </pre>
 
-Ist das Programm einmal auf beiden Arduinos hochgeladen, ist die Arduino IDE (o.ä.) nicht mehr notwending. Nun kann über einen Seriellen Monitor, wie zum Beispiel der Intergrierte der [Arduino IDE](https://www.arduino.cc/en/software) oder  [Putty](https://www.putty.org/) über den Arduino kommuniziert werden. In diesen Tools muss noch der Port, über den der Arduino angeschlossen ist, angegeben werden, sowie die Baud Rate des Seriellen Monitor, welche in `config.hpp` eingesehen und verändert werden kann, der Standard ist hier `9600`.
+Ist das Programm einmal auf beiden Arduinos hochgeladen, ist die Arduino IDE (o.ä.) nicht mehr notwendig. Nun kann über einen Seriellen Monitor, wie zum Beispiel der Intergrierte der [Arduino IDE](https://www.arduino.cc/en/software) oder  [Putty](https://www.putty.org/) über den Arduino kommuniziert werden. In diesen Tools muss noch der Port, über den der Arduino angeschlossen ist, angegeben werden, sowie die Baud Rate des Seriellen Monitor, welche in `config.hpp` eingesehen und verändert werden kann, der Standard ist hier `9600`.
 
 ## Reflexion
 Wie schon in `Strategie` erwähnt, war die grundsätzliche Strategie schnell gefunden, nur das ausarbeiten hat, dank der Rückschläge, etwas länger gedauert.
-Nach den ersten Rücklucken und das festsetzen auf die entgültige Implementationsstrategie war auch das Entwickeln eines ersten Gerüsts relativ straight forward. Das Debuggen sowie ein ordentlicher Aufbau der Schaltung war dann die größere Herausforderung. Da durch ständig wechselnde Lichtverhältnisse der Photoresistor nicht immer wie gewünsch funktionierte, verzögerte sich das Programm-Debuggen ungemein. Erst nach vielen Stunden rumgrübelns, rumschrauben und ausprobieren, stellte sich als einzige zufverlässige Methode eine eigene Blackbox für jedes LED-LM392 Paar heraus. 
+Nach den ersten Rücklucken und das festsetzen auf die entgültige Implementationsstrategie war auch das Entwickeln eines ersten Gerüsts relativ straight forward. Das Debuggen sowie ein ordentlicher Aufbau der Schaltung war dann die größere Herausforderung. Da durch ständig wechselnde Lichtverhältnisse der Photoresistor nicht immer wie gewünsch funktionierte, verzögerte sich das Programm-Debuggen ungemein. Erst nach vielen Stunden rumgrübelns, rumschrauben und ausprobieren, stellte sich als einzige zuverlässige Methode eine eigene Blackbox für jedes LED-LM392 Paar heraus. 
 
 
 ## Zusammenfassung
