@@ -1,6 +1,6 @@
 //init variables
 int LED = 2;
-int incomingByte, Char, ByteToSend, i;
+int incomingByte, ByteToSend;
 int SerialCounter = -1;
 //serial input buffer used as a stack
 int SerialBuffer[10];
@@ -37,21 +37,26 @@ void loop() {
       if(BitsToSend <= -1){
         //set byte to send
         BitsToSend = SerialBuffer[SerialCounter];
+        Serial.print("Sending byte: ");
+        Serial.println(BitsToSend);
       }else{
         digitalWrite(LED, state);
+        delay(70);
         //if led is on
         if(state){
           //decrease bit to send
           BitsToSend--;
           //if byte is sent, finish transmission
-          if(BitsToSend <= -1){
+          if(BitsToSend <= 0){
+            BitsToSend = -1;
             SerialCounter--;
+            delay(4*70);
             digitalWrite(LED, LOW);
-            delay(600);
+            delay(5000);
           }
         }
       }
     }
   }
-  delay(1);
+  delay(70);
 }

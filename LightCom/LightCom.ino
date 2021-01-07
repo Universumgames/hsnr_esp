@@ -1,28 +1,33 @@
 //declare variables
-int sender_clock = 6;
-int sender_data = 7;
-int reciever_clock = 4;
-int reciever_data = 3;
+//declare pins
+int sender_clock = 5;
+int sender_data = 6;
+int reciever_clock = 2;
+int reciever_clock_2 = 3;
+int reciever_data = 4;
+
 int incomingByte = 0;
-int reciever_clock_2 = 2;
 long long last_millis = 0;
-byte temp;
+byte temp = 0;
 int recieve_index = 7;
-byte b;
+byte b = 0;
+bool lastClockState = 0;
+
+//declare timing
+int ledDuration = 300;
+int minSignalDur = 100;
+int clDelay = 150;
 
 void setup()
 {
-  //attach Interrupts to not having to worry about reading from one pin
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_start, FALLING);
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_end, RISING);
   //initialize Serial Monitor
   Serial.begin(9600);
   //set pin modes
   pinMode(sender_clock, OUTPUT);
   pinMode(sender_data, OUTPUT);
   pinMode(reciever_clock, INPUT);
-  pinMode(reciever_data, INPUT);
   pinMode(reciever_clock_2, INPUT);
+  pinMode(reciever_data, INPUT);
 }
 
 void loop()
@@ -30,15 +35,24 @@ void loop()
   //check if serial queue contains items
   if (Serial.available() > 0)
   {
-    //read incoming byte (charactere)
+    //read incoming byte (characters)
     incomingByte = Serial.read();
     //send each bit seperately to serial monitor for debugging and to other arduino
     for (int i = 7; i >= 0; i--)
     {
-      Serial.print(bitRead(incomingByte, i));
       sendBit(bitRead(incomingByte, i));
     }
     Serial.println();
+  }
+
+  bool state = !digitalRead(reciever_clock);
+  if (state != lastClockState)
+  {
+     lastClockState = state;
+     if (state == HIGH)
+        clock_interrupt_start();
+     else
+        clock_interrupt_end();
   }
 }
 
@@ -55,16 +69,17 @@ void clock_interrupt_end()
   //calculate delta since clock fell, to check for hazards
   unsigned long delta = millis() - last_millis;
   //if delta > 100ms, it's nit a hazard or glitch from the photoresistor
-  if (delta > 100)
+  if (delta >= minSignalDur)
   {
     //write temporary byte to "longterm" byte
     b = temp;
+    Serial.print(bitRead(b, recieve_index));
     //reduce recieve index to move to next bit
     recieve_index--;
     //if recieve_index < 0 we have successfully recieved a byte and print that to the serial monitor
     if (recieve_index < 0)
     {
-      Serial.print(b);
+      Serial.write(b);
       //reset recieving variables to default state
       recieve_index = 7;
       b = 0x0;
@@ -82,15 +97,17 @@ void clock_interrupt_end()
 //send single bit
 void sendBit(bool bitt)
 {
+  Serial.print(bitt);
   //change data pin
   digitalWrite(sender_data, bitt);
-  delayMicroseconds(10);
+  delay(clDelay);
   //change clock to HIGH
   digitalWrite(sender_clock, HIGH);
   //wait to be able to differentiate between valid bit and a hazard
-  delayMicroseconds(500);
+  delay(ledDuration);
   //change both pins to default state
   digitalWrite(sender_clock, LOW);
+  delay(clDelay);
   digitalWrite(sender_data, LOW);
-  delayMicroseconds(5);
+  delay(ledDuration);
 }
