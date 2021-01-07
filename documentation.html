@@ -397,101 +397,117 @@ Unser Protokoll übernimmt dabei nur das Prinzip von &quot;Data&quot; und &quot;
 Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empfangen als auch zu Senden, wenn das passend aufgebaute Gegenstück existiert.</p>
 <h3 id="software">Software</h3>
 <p>Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier nur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.</p>
-<pre class="hljs"><code><div><span class="hljs-comment">//declare variables</span>
-<span class="hljs-keyword">int</span> sender_clock = <span class="hljs-number">6</span>;
-<span class="hljs-keyword">int</span> sender_data = <span class="hljs-number">7</span>;
-<span class="hljs-keyword">int</span> reciever_clock = <span class="hljs-number">4</span>;
-<span class="hljs-keyword">int</span> reciever_data = <span class="hljs-number">3</span>;
-<span class="hljs-keyword">int</span> incomingByte = <span class="hljs-number">0</span>;
-<span class="hljs-keyword">int</span> reciever_clock_2 = <span class="hljs-number">2</span>;
-<span class="hljs-keyword">long</span> <span class="hljs-keyword">long</span> last_millis = <span class="hljs-number">0</span>;
-byte temp;
-<span class="hljs-keyword">int</span> recieve_index = <span class="hljs-number">7</span>;
-byte b;
+<p>LED_SendSimple.ino</p>
+<pre class="hljs"><code><div><span class="hljs-comment">//init variables</span>
+<span class="hljs-keyword">int</span> LED = <span class="hljs-number">2</span>;
+<span class="hljs-keyword">int</span> incomingByte, ByteToSend;
+<span class="hljs-keyword">int</span> SerialCounter = <span class="hljs-number">-1</span>;
+<span class="hljs-comment">//serial input buffer used as a stack</span>
+<span class="hljs-keyword">int</span> SerialBuffer[<span class="hljs-number">10</span>];
+<span class="hljs-keyword">int</span> MaxValue = <span class="hljs-number">4</span>;
+<span class="hljs-keyword">int</span> ClockCounter = <span class="hljs-number">0</span>;
+boolean state = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> BitsToSend = <span class="hljs-number">-1</span>;
 
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span>
-</span>{
-  <span class="hljs-comment">//attach Interrupts to not having to worry about reading from one pin</span>
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_start, FALLING);
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_end, RISING);
-  <span class="hljs-comment">//initialize Serial Monitor</span>
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-comment">//init serial interface</span>
   Serial.begin(<span class="hljs-number">9600</span>);
-  <span class="hljs-comment">//set pin modes</span>
-  pinMode(sender_clock, OUTPUT);
-  pinMode(sender_data, OUTPUT);
-  pinMode(reciever_clock, INPUT);
-  pinMode(reciever_data, INPUT);
-  pinMode(reciever_clock_2, INPUT);
+  pinMode(LED, OUTPUT);
 }
 
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span>
-</span>{
-  <span class="hljs-comment">//check if serial queue contains items</span>
-  <span class="hljs-keyword">if</span> (Serial.available() &gt; <span class="hljs-number">0</span>)
-  {
-    <span class="hljs-comment">//read incoming byte (charactere)</span>
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-comment">//read serial input if available</span>
+  <span class="hljs-keyword">if</span>(Serial.available() &gt; <span class="hljs-number">0</span>){
     incomingByte = Serial.read();
-    <span class="hljs-comment">//send each bit seperately to serial monitor for debugging and to other arduino</span>
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">7</span>; i &gt;= <span class="hljs-number">0</span>; i--)
-    {
-      Serial.print(bitRead(incomingByte, i));
-      sendBit(bitRead(incomingByte, i));
+    <span class="hljs-keyword">if</span> (incomingByte &gt;= <span class="hljs-number">32</span>){
+      <span class="hljs-comment">//increment serial counter</span>
+      SerialCounter++;
+      <span class="hljs-comment">//store recieved byte from serial into stack buffer</span>
+      SerialBuffer[SerialCounter] = incomingByte;
     }
-    Serial.println();
   }
-}
-
-<span class="hljs-comment">//read incoming bits</span>
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">clock_interrupt_start</span><span class="hljs-params">()</span>
-</span>{
-  <span class="hljs-keyword">bool</span> dataval = !digitalRead(reciever_data);
-  bitWrite(temp, recieve_index, dataval);
-}
-
-<span class="hljs-comment">//verify incoming bit</span>
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">clock_interrupt_end</span><span class="hljs-params">()</span>
-</span>{
-  <span class="hljs-comment">//calculate delta since clock fell, to check for hazards</span>
-  <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> delta = millis() - last_millis;
-  <span class="hljs-comment">//if delta &gt; 100ms, it's nit a hazard or glitch from the photoresistor</span>
-  <span class="hljs-keyword">if</span> (delta &gt; <span class="hljs-number">100</span>)
-  {
-    <span class="hljs-comment">//write temporary byte to "longterm" byte</span>
-    b = temp;
-    <span class="hljs-comment">//reduce recieve index to move to next bit</span>
-    recieve_index--;
-    <span class="hljs-comment">//if recieve_index &lt; 0 we have successfully recieved a byte and print that to the serial monitor</span>
-    <span class="hljs-keyword">if</span> (recieve_index &lt; <span class="hljs-number">0</span>)
-    {
-      Serial.print(b);
-      <span class="hljs-comment">//reset recieving variables to default state</span>
-      recieve_index = <span class="hljs-number">7</span>;
-      b = <span class="hljs-number">0x0</span>;
+  ClockCounter++;
+  <span class="hljs-keyword">if</span>(ClockCounter &gt;= MaxValue){
+    ClockCounter = <span class="hljs-number">0</span>;
+    state = !state;
+    <span class="hljs-comment">//if serial buffer is not empty</span>
+    <span class="hljs-keyword">if</span>(SerialCounter &gt; <span class="hljs-number">-1</span>){
+      <span class="hljs-comment">//if current byte to send is not set</span>
+      <span class="hljs-keyword">if</span>(BitsToSend &lt;= <span class="hljs-number">-1</span>){
+        <span class="hljs-comment">//set byte to send</span>
+        BitsToSend = SerialBuffer[SerialCounter];
+        Serial.print(<span class="hljs-string">"Sending byte: "</span>);
+        Serial.println(BitsToSend);
+      }<span class="hljs-keyword">else</span>{
+        digitalWrite(LED, state);
+        delay(<span class="hljs-number">70</span>);
+        <span class="hljs-comment">//if led is on</span>
+        <span class="hljs-keyword">if</span>(state){
+          <span class="hljs-comment">//decrease bit to send</span>
+          BitsToSend--;
+          <span class="hljs-comment">//if byte is sent, finish transmission</span>
+          <span class="hljs-keyword">if</span>(BitsToSend &lt;= <span class="hljs-number">0</span>){
+            BitsToSend = <span class="hljs-number">-1</span>;
+            SerialCounter--;
+            delay(<span class="hljs-number">4</span>*<span class="hljs-number">70</span>);
+            digitalWrite(LED, LOW);
+            delay(<span class="hljs-number">5000</span>);
+          }
+        }
+      }
     }
-    <span class="hljs-comment">//reset for delta caluclation</span>
-    last_millis = millis();
   }
-  <span class="hljs-keyword">else</span>
-  {
-    <span class="hljs-comment">//if a glitch was detected, delete temporarily recieved bit</span>
-    temp = b;
-  }
+  delay(<span class="hljs-number">70</span>);
+}
+</div></code></pre>
+<p>LED_ReecieveSimple.ino</p>
+<pre class="hljs"><code><div><span class="hljs-comment">//init variables</span>
+<span class="hljs-keyword">int</span> LDR = <span class="hljs-number">2</span>;
+<span class="hljs-keyword">int</span> ClockCounter = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> FlashCounter = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> MaxValue = <span class="hljs-number">2500</span>;
+<span class="hljs-keyword">int</span> HighFlanke = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> Flash;
+<span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> <span class="hljs-keyword">long</span> lastmillis = <span class="hljs-number">0</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-comment">//init serial monitor</span>
+  Serial.begin(<span class="hljs-number">9600</span>);
+  <span class="hljs-comment">//init pinmode</span>
+  pinMode(LDR, INPUT);
 }
 
-<span class="hljs-comment">//send single bit</span>
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">sendBit</span><span class="hljs-params">(<span class="hljs-keyword">bool</span> bitt)</span>
-</span>{
-  <span class="hljs-comment">//change data pin</span>
-  digitalWrite(sender_data, bitt);
-  delayMicroseconds(<span class="hljs-number">10</span>);
-  <span class="hljs-comment">//change clock to HIGH</span>
-  digitalWrite(sender_clock, HIGH);
-  <span class="hljs-comment">//wait to be able to differentiate between valid bit and a hazard</span>
-  delayMicroseconds(<span class="hljs-number">500</span>);
-  <span class="hljs-comment">//change both pins to default state</span>
-  digitalWrite(sender_clock, LOW);
-  digitalWrite(sender_data, LOW);
-  delayMicroseconds(<span class="hljs-number">5</span>);
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span> </span>{
+  ClockCounter++;
+  <span class="hljs-comment">//red LDR value</span>
+  Flash = digitalRead(LDR);
+  <span class="hljs-keyword">if</span>(Flash){
+    HighFlanke = <span class="hljs-number">1</span>;
+  }
+  <span class="hljs-comment">//if LDR value changes from HIGH to LOW</span>
+  <span class="hljs-keyword">if</span>(!Flash &amp;&amp; HighFlanke){
+    HighFlanke = <span class="hljs-number">0</span>;
+    <span class="hljs-comment">//increment flashcounter    </span>
+    <span class="hljs-keyword">int</span> delta = millis()- lastmillis;    
+  <span class="hljs-keyword">if</span>(delta &gt;= <span class="hljs-number">500</span>){
+    FlashCounter++;
+    ClockCounter = <span class="hljs-number">0</span>;
+  }
+  Serial.print(FlashCounter);
+    Serial.print(<span class="hljs-string">": "</span>);
+    Serial.print(delta);
+    Serial.println(<span class="hljs-string">"ms"</span>); 
+    lastmillis = millis();
+  }
+  <span class="hljs-comment">//if transmission for one character finished</span>
+  <span class="hljs-keyword">if</span>((ClockCounter &gt;= MaxValue) &amp;&amp; FlashCounter &gt; <span class="hljs-number">0</span>){
+    <span class="hljs-comment">//write flashcounter as character</span>
+    Serial.write(FlashCounter);
+    Serial.println(FlashCounter);
+    <span class="hljs-comment">//reset flashcounter for next character</span>
+    FlashCounter = <span class="hljs-number">0</span>;
+  }<span class="hljs-keyword">else</span> delay(<span class="hljs-number">1</span>);
 }
 </div></code></pre>
 <p>Link zum Aktuellen Programmcode: <a href="https://github.com/Universumgames/hsnr_esp/tree/master/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/master/LightCom">IDE3</a> <br>
