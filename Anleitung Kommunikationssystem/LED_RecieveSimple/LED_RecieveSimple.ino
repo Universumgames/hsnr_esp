@@ -2,9 +2,11 @@
 int LDR = 2;
 int ClockCounter = 0;
 int FlashCounter = 0;
-int MaxValue = 30;
+int MaxValue = 2500;
 int HighFlanke = 0;
 int Flash;
+unsigned long long lastmillis = 0;
+int skippedMillis = 0;
 
 void setup()
 {
@@ -28,14 +30,29 @@ void loop()
   {
     HighFlanke = 0;
     //increment flashcounter
-    FlashCounter++;
-    ClockCounter = 0;
+    int delta = millis() - lastmillis;
+    if (delta >= 500 || skippedMillis >= 500)
+    {
+      FlashCounter++;
+      ClockCounter = 0;
+      skippedMillis = 0;
+    }
+    else
+    {
+      skippedMillis += delta;
+    }
+    Serial.print(FlashCounter);
+    Serial.print(": ");
+    Serial.print(delta);
+    Serial.println("ms");
+    lastmillis = millis();
   }
   //if transmission for one character finished
-  if (ClockCounter >= MaxValue && FlashCounter > 0)
+  if ((ClockCounter >= MaxValue) && FlashCounter > 0)
   {
     //write flashcounter as character
     Serial.write(FlashCounter);
+    Serial.println(FlashCounter);
     //reset flashcounter for next character
     FlashCounter = 0;
   }
