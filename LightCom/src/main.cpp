@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @author Arlt, Tom - Meyer, Florian - Mueller, Henning - Koerwer, Florian
+ * @author Arlt, Tom
  * @brief Main file to start program on Arduino Uno/Nano, kept as short as possible
  * @version 0.1
  * @date 2020-11-11
@@ -12,10 +12,12 @@
 #include "config.hpp"
 #include "LightCom.hpp"
 
-void setup() {
+void setup()
+{
   com.setup();
 }
 
-void loop() {
+void loop()
+{
   com.loop();
 }
