@@ -16,7 +16,7 @@ bool lastClockState = 0;
 //declare timing
 int ledDuration = 300;
 int minSignalDur = 100;
-int clDelay = 150;
+int clDelay = 50;
 
 void setup()
 {
@@ -37,6 +37,11 @@ void loop()
   {
     //read incoming byte (characters)
     incomingByte = Serial.read();
+    
+    Serial.write(incomingByte);
+    Serial.print(": ");
+    Serial.print(incomingByte);
+    Serial.print(" ");
     //send each bit seperately to serial monitor for debugging and to other arduino
     for (int i = 7; i >= 0; i--)
     {
