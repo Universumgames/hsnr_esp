@@ -35,103 +35,126 @@ Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empf
 
 Unser Programm wurde in C++ für die Arduino IDE geschrieben, schaue man sich frühere Commits an (vor dem 18.12.2020) wurde noch für eine andere IDE gechrieben: PaltformIO welche zwar auf der Arduino IDE basiert, jedoch hier nur eine Extension für die IDE VS Code ist. Einfacheitshalber wurde jedoch entgültig zur Arduino IDE gewechselt.
 
+LED_SendSimple.ino
 ```cpp
-//declare variables
-int sender_clock = 6;
-int sender_data = 7;
-int reciever_clock = 4;
-int reciever_data = 3;
-int incomingByte = 0;
-int reciever_clock_2 = 2;
-long long last_millis = 0;
-byte temp;
-int recieve_index = 7;
-byte b;
+//init variables
+int LED = 2;
+int incomingByte, ByteToSend;
+int SerialCounter = -1;
+//serial input buffer used as a stack
+int SerialBuffer[10];
+int MaxValue = 4;
+int ClockCounter = 0;
+boolean state = 0;
+int BitsToSend = -1;
 
-void setup()
-{
-  //attach Interrupts to not having to worry about reading from one pin
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_start, FALLING);
-  attachInterrupt(digitalPinToInterrupt(reciever_clock), clock_interrupt_end, RISING);
-  //initialize Serial Monitor
+
+void setup() {
+  //init serial interface
   Serial.begin(9600);
-  //set pin modes
-  pinMode(sender_clock, OUTPUT);
-  pinMode(sender_data, OUTPUT);
-  pinMode(reciever_clock, INPUT);
-  pinMode(reciever_data, INPUT);
-  pinMode(reciever_clock_2, INPUT);
+  pinMode(LED, OUTPUT);
 }
 
-void loop()
-{
-  //check if serial queue contains items
-  if (Serial.available() > 0)
-  {
-    //read incoming byte (charactere)
+void loop() {
+  //read serial input if available
+  if(Serial.available() > 0){
     incomingByte = Serial.read();
-    //send each bit seperately to serial monitor for debugging and to other arduino
-    for (int i = 7; i >= 0; i--)
-    {
-      Serial.print(bitRead(incomingByte, i));
-      sendBit(bitRead(incomingByte, i));
+    if (incomingByte >= 32){
+      //increment serial counter
+      SerialCounter++;
+      //store recieved byte from serial into stack buffer
+      SerialBuffer[SerialCounter] = incomingByte;
     }
-    Serial.println();
   }
-}
-
-//read incoming bits
-void clock_interrupt_start()
-{
-  bool dataval = !digitalRead(reciever_data);
-  bitWrite(temp, recieve_index, dataval);
-}
-
-//verify incoming bit
-void clock_interrupt_end()
-{
-  //calculate delta since clock fell, to check for hazards
-  unsigned long delta = millis() - last_millis;
-  //if delta > 100ms, it's nit a hazard or glitch from the photoresistor
-  if (delta > 100)
-  {
-    //write temporary byte to "longterm" byte
-    b = temp;
-    //reduce recieve index to move to next bit
-    recieve_index--;
-    //if recieve_index < 0 we have successfully recieved a byte and print that to the serial monitor
-    if (recieve_index < 0)
-    {
-      Serial.print(b);
-      //reset recieving variables to default state
-      recieve_index = 7;
-      b = 0x0;
+  ClockCounter++;
+  if(ClockCounter >= MaxValue){
+    ClockCounter = 0;
+    state = !state;
+    //if serial buffer is not empty
+    if(SerialCounter > -1){
+      //if current byte to send is not set
+      if(BitsToSend <= -1){
+        //set byte to send
+        BitsToSend = SerialBuffer[SerialCounter];
+        Serial.print("Sending byte: ");
+        Serial.println(BitsToSend);
+      }else{
+        digitalWrite(LED, state);
+        delay(70);
+        //if led is on
+        if(state){
+          //decrease bit to send
+          BitsToSend--;
+          //if byte is sent, finish transmission
+          if(BitsToSend <= 0){
+            BitsToSend = -1;
+            SerialCounter--;
+            delay(4*70);
+            digitalWrite(LED, LOW);
+            delay(5000);
+          }
+        }
+      }
     }
-    //reset for delta caluclation
-    last_millis = millis();
   }
-  else
-  {
-    //if a glitch was detected, delete temporarily recieved bit
-    temp = b;
-  }
+  delay(70);
+}
+```
+
+LED_RecieveSimple.ino
+```cpp
+//init variables
+int LDR = 2;
+int ClockCounter = 0;
+int FlashCounter = 0;
+int MaxValue = 2500;
+int HighFlanke = 0;
+int Flash;
+unsigned long long lastmillis = 0;
+
+void setup() {
+  //init serial monitor
+  Serial.begin(9600);
+  //init pinmode
+  pinMode(LDR, INPUT);
 }
 
-//send single bit
-void sendBit(bool bitt)
-{
-  //change data pin
-  digitalWrite(sender_data, bitt);
-  delayMicroseconds(10);
-  //change clock to HIGH
-  digitalWrite(sender_clock, HIGH);
-  //wait to be able to differentiate between valid bit and a hazard
-  delayMicroseconds(500);
-  //change both pins to default state
-  digitalWrite(sender_clock, LOW);
-  digitalWrite(sender_data, LOW);
-  delayMicroseconds(5);
+void loop() {
+  ClockCounter++;
+  //red LDR value
+  Flash = digitalRead(LDR);
+  if(Flash){
+    HighFlanke = 1;
+  }
+  //if LDR value changes from HIGH to LOW
+  if(!Flash && HighFlanke){
+    HighFlanke = 0;
+    //increment flashcounter    
+    int delta = millis()- lastmillis;    
+  if(delta >= 500){
+    FlashCounter++;
+    ClockCounter = 0;
+  }
+  Serial.print(FlashCounter);
+    Serial.print(": ");
+    Serial.print(delta);
+    Serial.println("ms"); 
+    lastmillis = millis();
+  }
+  //if transmission for one character finished
+  if((ClockCounter >= MaxValue) && FlashCounter > 0){
+    //write flashcounter as character
+    Serial.write(FlashCounter);
+    Serial.println(FlashCounter);
+    //reset flashcounter for next character
+    FlashCounter = 0;
+  }else delay(1);
 }
+```
+
+LightCom.ino (LED_RecieveSynchron.ino + LED_SendSynchron) (eigene Lösung)
+```cpp
+
 ```
 
 Link zum Aktuellen Programmcode: [Github](https://github.com/Universumgames/hsnr_esp/tree/master/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/master/LightCom) <br>
