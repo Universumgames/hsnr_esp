@@ -409,7 +409,6 @@ Dargestellt wurde hier ein einzelner Arduino, der in der Lage ist sowohl zu Empf
 boolean state = <span class="hljs-number">0</span>;
 <span class="hljs-keyword">int</span> BitsToSend = <span class="hljs-number">-1</span>;
 
-
 <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span> </span>{
   <span class="hljs-comment">//init serial interface</span>
   Serial.begin(<span class="hljs-number">9600</span>);
@@ -427,6 +426,7 @@ boolean state = <span class="hljs-number">0</span>;
       SerialBuffer[SerialCounter] = incomingByte;
     }
   }
+  <span class="hljs-comment">//theoratically the clockcounter could be removed and the delay in the last line set to 4*x</span>
   ClockCounter++;
   <span class="hljs-keyword">if</span>(ClockCounter &gt;= MaxValue){
     ClockCounter = <span class="hljs-number">0</span>;
@@ -450,6 +450,7 @@ boolean state = <span class="hljs-number">0</span>;
           <span class="hljs-keyword">if</span>(BitsToSend &lt;= <span class="hljs-number">0</span>){
             BitsToSend = <span class="hljs-number">-1</span>;
             SerialCounter--;
+            <span class="hljs-comment">//wait same time as in outer loop, to avoid flickering of last count</span>
             delay(<span class="hljs-number">4</span>*<span class="hljs-number">70</span>);
             digitalWrite(LED, LOW);
             delay(<span class="hljs-number">5000</span>);
@@ -470,46 +471,70 @@ boolean state = <span class="hljs-number">0</span>;
 <span class="hljs-keyword">int</span> HighFlanke = <span class="hljs-number">0</span>;
 <span class="hljs-keyword">int</span> Flash;
 <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> <span class="hljs-keyword">long</span> lastmillis = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">int</span> skippedMillis = <span class="hljs-number">0</span>;
 
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span> </span>{
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">setup</span><span class="hljs-params">()</span>
+</span>{
   <span class="hljs-comment">//init serial monitor</span>
   Serial.begin(<span class="hljs-number">9600</span>);
   <span class="hljs-comment">//init pinmode</span>
   pinMode(LDR, INPUT);
 }
 
-<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span> </span>{
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">loop</span><span class="hljs-params">()</span>
+</span>{
   ClockCounter++;
-  <span class="hljs-comment">//red LDR value</span>
+  <span class="hljs-comment">//read LDR value</span>
   Flash = digitalRead(LDR);
-  <span class="hljs-keyword">if</span>(Flash){
+  <span class="hljs-comment">//if led is off</span>
+  <span class="hljs-keyword">if</span> (Flash)
+  {
     HighFlanke = <span class="hljs-number">1</span>;
   }
   <span class="hljs-comment">//if LDR value changes from HIGH to LOW</span>
-  <span class="hljs-keyword">if</span>(!Flash &amp;&amp; HighFlanke){
+  <span class="hljs-keyword">if</span> (!Flash &amp;&amp; HighFlanke)
+  {
     HighFlanke = <span class="hljs-number">0</span>;
-    <span class="hljs-comment">//increment flashcounter    </span>
-    <span class="hljs-keyword">int</span> delta = millis()- lastmillis;    
-  <span class="hljs-keyword">if</span>(delta &gt;= <span class="hljs-number">500</span>){
-    FlashCounter++;
-    ClockCounter = <span class="hljs-number">0</span>;
-  }
-  Serial.print(FlashCounter);
+    <span class="hljs-comment">//increment flashcounter</span>
+    <span class="hljs-comment">//account for glitches (glitches most often split a flash into two flashes)</span>
+    <span class="hljs-keyword">long</span> delta = millis() - lastmillis;
+    <span class="hljs-keyword">if</span> (delta &gt;= <span class="hljs-number">500</span> || skippedMillis &gt;= <span class="hljs-number">500</span>)
+    {
+      <span class="hljs-comment">//increment counter and reset other variables</span>
+      FlashCounter++;
+      ClockCounter = <span class="hljs-number">0</span>;
+      skippedMillis = <span class="hljs-number">0</span>;
+    }
+    <span class="hljs-keyword">else</span>
+    {
+      <span class="hljs-comment">//to avoid glitches to impact transmission</span>
+      skippedMillis += delta;
+    }
+    <span class="hljs-comment">//debug messages</span>
+    Serial.print(FlashCounter);
     Serial.print(<span class="hljs-string">": "</span>);
     Serial.print(delta);
-    Serial.println(<span class="hljs-string">"ms"</span>); 
+    Serial.print(<span class="hljs-string">"ms "</span>);
+    Serial.println(skippedMillis);
     lastmillis = millis();
   }
   <span class="hljs-comment">//if transmission for one character finished</span>
-  <span class="hljs-keyword">if</span>((ClockCounter &gt;= MaxValue) &amp;&amp; FlashCounter &gt; <span class="hljs-number">0</span>){
+  <span class="hljs-keyword">if</span> (ClockCounter &gt;= MaxValue &amp;&amp; FlashCounter &gt; <span class="hljs-number">0</span>)
+  {
     <span class="hljs-comment">//write flashcounter as character</span>
     Serial.write(FlashCounter);
+    <span class="hljs-comment">//write ascii value</span>
     Serial.println(FlashCounter);
     <span class="hljs-comment">//reset flashcounter for next character</span>
     FlashCounter = <span class="hljs-number">0</span>;
-  }<span class="hljs-keyword">else</span> delay(<span class="hljs-number">1</span>);
+  }
+  <span class="hljs-keyword">else</span>
+    delay(<span class="hljs-number">1</span>);
 }
 </div></code></pre>
+<h4 id="funktionsweise-von-simplesendrecieve">Funktionsweise von Simple(Send/Recieve)</h4>
+<p>Die Funktionsweise von LED_SendSimple.ino basiert auf einer seriellen Datenübertragung. Um ein Zeichen zu übertragen wird dazu der byte Zahlenwert übermittelt. Dazu bleibt die LED x Millisekunden an und x Millisekunden aus, in unserem fall jeweils ca. 350. Nach vollständigem Durchzählen eines Bytes wird die Übertragung dieses mit einer sechs sekündigen Wartezeit abgeschlossen. <br>
+Auf der Empfangsseite wird dabei auf ein eintreffendes Signal gewartet. Wenn mit einem Abstand von mindestens 500 ms ein Blinken erkannt wird, wir der derzeige Byte-Wert um eins erhöht, falls die Delta Zeit geringer ist, wird eine separate Variable erhöht. Durch das Verwenden der Deltazeit und dem Abfragen dieser zusätzliche Zeitvariable, wird der Einfluss von Glitches und Hazards bestmöglich minimiert. Bei einer Deltazeit von mehr als 2,5 Sekunden wird die Übteragung dieses Bytes abgeschlossen und dieser wird ausgegeben.</p>
 <p>LightCom.ino (LED_RecieveSynchron.ino + LED_SendSynchron) (eigene Lösung)</p>
 <pre class="hljs"><code><div><span class="hljs-comment">//declare variables</span>
 <span class="hljs-comment">//declare pins</span>
@@ -563,6 +588,7 @@ byte b = <span class="hljs-number">0</span>;
     Serial.println();
   }
 
+<span class="hljs-comment">//check for changes on clock pin</span>
   <span class="hljs-keyword">bool</span> state = !digitalRead(reciever_clock);
   <span class="hljs-keyword">if</span> (state != lastClockState)
   {
@@ -632,6 +658,8 @@ byte b = <span class="hljs-number">0</span>;
 
 
 </div></code></pre>
+<h4 id="funktionsweise-von-lightcom">Funktionsweise von LightCom</h4>
+<p>Dieses Projekt ist ist für eine bidirektionale Kommunikation geeinget, d.h. beide Arduinos können miteinander kommunizieren. Die Kommunikation basiert auf dem simplen serieellen Protokoll namens I<sup>2</sup>C, bei dem zwei Verbindungen für eine serielle Datenübertragung verwendet werden. Diese Verbindungen heißen &quot;Clock&quot; und &quot;Data&quot; bzw. &quot;SDA&quot; (Serial Data) und &quot;SCL&quot; (Serial Clock). Bei der Modifikation dieses Protokolls wurde die Funktionsweise nicht verändert, jedoch musste das Verhalten des LDRs beachtet werden, da dieser Logisch negiert. Um nun einen Byte zu senden wird dieser Bitweise übertragen, dabei wird der MSB als erstes gesendet und die Übertragung eines Bytes endet mit dem LSB. Das Übermitteln eines einzelnen Bits erfolgt dabei wiefolgt: Die &quot;Data&quot;-LED wird auf den jeweiligen Wert des Bits gesetzt (HIGH für 1 und LOW für 0), nach einem kurzeln Delay, um sicherzustellen, dass die LED ihre gewünschte Helligkeit erreicht hat, wird die &quot;Clock&quot;-LED auf HIGH gesetzt, kurze Zeit später werden beide LEDs, unabhänging von ihrem vorherigen Zustand, wieder auf LOW gesetzt. Nach dem Empfangen von 8 Bits, bereits entsprechend dem MSB und LSB in einem Byte gespeichert, werden diese als ASCII Buchstabe auf dem Seriellen Monitor ausgegeben.</p>
 <p>Link zum Aktuellen Programmcode: <a href="https://github.com/Universumgames/hsnr_esp/tree/master/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/master/LightCom">IDE3</a> <br>
 Link zum aufbereiteten/alternativen Code (eigenständig entwickelt von Tom Arlt):  <a href="https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom">Github</a>, <a href="https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom">IDE3</a></p>
 <h2 id="verwendung">Verwendung</h2>

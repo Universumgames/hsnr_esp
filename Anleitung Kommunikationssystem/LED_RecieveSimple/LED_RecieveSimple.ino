@@ -30,7 +30,7 @@ void loop()
   {
     HighFlanke = 0;
     //increment flashcounter
-    int delta = millis() - lastmillis;
+    long delta = millis() - lastmillis;
     if (delta >= 500 || skippedMillis >= 500)
     {
       FlashCounter++;
@@ -44,11 +44,12 @@ void loop()
     Serial.print(FlashCounter);
     Serial.print(": ");
     Serial.print(delta);
-    Serial.println("ms");
+    Serial.print("ms ");
+    Serial.println(skippedMillis);
     lastmillis = millis();
   }
   //if transmission for one character finished
-  if ((ClockCounter >= MaxValue) && FlashCounter > 0)
+  if (ClockCounter >= MaxValue && FlashCounter > 0)
   {
     //write flashcounter as character
     Serial.write(FlashCounter);

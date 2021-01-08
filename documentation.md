@@ -48,7 +48,6 @@ int ClockCounter = 0;
 boolean state = 0;
 int BitsToSend = -1;
 
-
 void setup() {
   //init serial interface
   Serial.begin(9600);
@@ -66,6 +65,7 @@ void loop() {
       SerialBuffer[SerialCounter] = incomingByte;
     }
   }
+  //theoratically the clockcounter could be removed and the delay in the last line set to 4*x
   ClockCounter++;
   if(ClockCounter >= MaxValue){
     ClockCounter = 0;
@@ -89,6 +89,7 @@ void loop() {
           if(BitsToSend <= 0){
             BitsToSend = -1;
             SerialCounter--;
+            //wait same time as in outer loop, to avoid flickering of last count
             delay(4*70);
             digitalWrite(LED, LOW);
             delay(5000);
@@ -111,46 +112,71 @@ int MaxValue = 2500;
 int HighFlanke = 0;
 int Flash;
 unsigned long long lastmillis = 0;
+int skippedMillis = 0;
 
-void setup() {
+void setup()
+{
   //init serial monitor
   Serial.begin(9600);
   //init pinmode
   pinMode(LDR, INPUT);
 }
 
-void loop() {
+void loop()
+{
   ClockCounter++;
-  //red LDR value
+  //read LDR value
   Flash = digitalRead(LDR);
-  if(Flash){
+  //if led is off
+  if (Flash)
+  {
     HighFlanke = 1;
   }
   //if LDR value changes from HIGH to LOW
-  if(!Flash && HighFlanke){
+  if (!Flash && HighFlanke)
+  {
     HighFlanke = 0;
-    //increment flashcounter    
-    int delta = millis()- lastmillis;    
-  if(delta >= 500){
-    FlashCounter++;
-    ClockCounter = 0;
-  }
-  Serial.print(FlashCounter);
+    //increment flashcounter
+    //account for glitches (glitches most often split a flash into two flashes)
+    long delta = millis() - lastmillis;
+    if (delta >= 500 || skippedMillis >= 500)
+    {
+      //increment counter and reset other variables
+      FlashCounter++;
+      ClockCounter = 0;
+      skippedMillis = 0;
+    }
+    else
+    {
+      //to avoid glitches to impact transmission
+      skippedMillis += delta;
+    }
+    //debug messages
+    Serial.print(FlashCounter);
     Serial.print(": ");
     Serial.print(delta);
-    Serial.println("ms"); 
+    Serial.print("ms ");
+    Serial.println(skippedMillis);
     lastmillis = millis();
   }
   //if transmission for one character finished
-  if((ClockCounter >= MaxValue) && FlashCounter > 0){
+  if (ClockCounter >= MaxValue && FlashCounter > 0)
+  {
     //write flashcounter as character
     Serial.write(FlashCounter);
+    //write ascii value
     Serial.println(FlashCounter);
     //reset flashcounter for next character
     FlashCounter = 0;
-  }else delay(1);
+  }
+  else
+    delay(1);
 }
 ```
+
+#### Funktionsweise von Simple(Send/Recieve)
+Die Funktionsweise von LED_SendSimple.ino basiert auf einer seriellen Datenübertragung. Um ein Zeichen zu übertragen wird dazu der byte Zahlenwert übermittelt. Dazu bleibt die LED x Millisekunden an und x Millisekunden aus, in unserem fall jeweils ca. 350. Nach vollständigem Durchzählen eines Bytes wird die Übertragung dieses mit einer sechs sekündigen Wartezeit abgeschlossen. <br>
+Auf der Empfangsseite wird dabei auf ein eintreffendes Signal gewartet. Wenn mit einem Abstand von mindestens 500 ms ein Blinken erkannt wird, wir der derzeige Byte-Wert um eins erhöht, falls die Delta Zeit geringer ist, wird eine separate Variable erhöht. Durch das Verwenden der Deltazeit und dem Abfragen dieser zusätzliche Zeitvariable, wird der Einfluss von Glitches und Hazards bestmöglich minimiert. Bei einer Deltazeit von mehr als 2,5 Sekunden wird die Übteragung dieses Bytes abgeschlossen und dieser wird ausgegeben. 
 
 LightCom.ino (LED_RecieveSynchron.ino + LED_SendSynchron) (eigene Lösung)
 ```cpp
@@ -206,6 +232,7 @@ void loop()
     Serial.println();
   }
 
+//check for changes on clock pin
   bool state = !digitalRead(reciever_clock);
   if (state != lastClockState)
   {
@@ -275,6 +302,9 @@ void sendBit(bool bitt)
 
 
 ```
+
+#### Funktionsweise von LightCom
+Dieses Projekt ist ist für eine bidirektionale Kommunikation geeinget, d.h. beide Arduinos können miteinander kommunizieren. Die Kommunikation basiert auf dem simplen serieellen Protokoll namens I<sup>2</sup>C, bei dem zwei Verbindungen für eine serielle Datenübertragung verwendet werden. Diese Verbindungen heißen "Clock" und "Data" bzw. "SDA" (Serial Data) und "SCL" (Serial Clock). Bei der Modifikation dieses Protokolls wurde die Funktionsweise nicht verändert, jedoch musste das Verhalten des LDRs beachtet werden, da dieser Logisch negiert. Um nun einen Byte zu senden wird dieser Bitweise übertragen, dabei wird der MSB als erstes gesendet und die Übertragung eines Bytes endet mit dem LSB. Das Übermitteln eines einzelnen Bits erfolgt dabei wiefolgt: Die "Data"-LED wird auf den jeweiligen Wert des Bits gesetzt (HIGH für 1 und LOW für 0), nach einem kurzeln Delay, um sicherzustellen, dass die LED ihre gewünschte Helligkeit erreicht hat, wird die "Clock"-LED auf HIGH gesetzt, kurze Zeit später werden beide LEDs, unabhänging von ihrem vorherigen Zustand, wieder auf LOW gesetzt. Nach dem Empfangen von 8 Bits, bereits entsprechend dem MSB und LSB in einem Byte gespeichert, werden diese als ASCII Buchstabe auf dem Seriellen Monitor ausgegeben.
 
 Link zum Aktuellen Programmcode: [Github](https://github.com/Universumgames/hsnr_esp/tree/master/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/master/LightCom) <br>
 Link zum aufbereiteten/alternativen Code (eigenständig entwickelt von Tom Arlt):  [Github](https://github.com/Universumgames/hsnr_esp/tree/universumgames/LightCom), [IDE3](https://git.ide3.de/universumgames/esp/-/tree/universumgames/LightCom)
