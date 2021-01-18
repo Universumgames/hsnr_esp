@@ -3,7 +3,6 @@
 int sender_clock = 5;
 int sender_data = 6;
 int reciever_clock = 2;
-int reciever_clock_2 = 3;
 int reciever_data = 4;
 
 int incomingByte = 0;
@@ -26,7 +25,6 @@ void setup()
   pinMode(sender_clock, OUTPUT);
   pinMode(sender_data, OUTPUT);
   pinMode(reciever_clock, INPUT);
-  pinMode(reciever_clock_2, INPUT);
   pinMode(reciever_data, INPUT);
 }
 
