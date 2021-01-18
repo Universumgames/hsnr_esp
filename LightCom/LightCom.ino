@@ -15,7 +15,7 @@ bool lastClockState = 0;
 
 //declare timing
 int ledDuration = 300;
-int minSignalDur = 100;
+int minSignalDur = 250;
 int clDelay = 50;
 
 void setup()
@@ -66,6 +66,8 @@ void clock_interrupt_start()
 {
   bool dataval = !digitalRead(reciever_data);
   bitWrite(temp, recieve_index, dataval);
+  Serial.print("recieved: ");
+  Serial.println(dataval);
 }
 
 //verify incoming bit
@@ -79,12 +81,15 @@ void clock_interrupt_end()
     //write temporary byte to "longterm" byte
     b = temp;
     Serial.print(bitRead(b, recieve_index));
+    Serial.print(": ");
+    Serial.println(delta);
     //reduce recieve index to move to next bit
     recieve_index--;
     //if recieve_index < 0 we have successfully recieved a byte and print that to the serial monitor
     if (recieve_index < 0)
     {
       Serial.write(b);
+      Serial.println();
       //reset recieving variables to default state
       recieve_index = 7;
       b = 0x0;
@@ -96,6 +101,7 @@ void clock_interrupt_end()
   {
     //if a glitch was detected, delete temporarily recieved bit
     temp = b;
+    Serial.println("glitch");
   }
 }
 

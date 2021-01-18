@@ -28,6 +28,8 @@ void loop() {
         BitCounter = 0;
       }
       ClockCounter = 0;
+      Serial.println();
+      Serial.println("Timeout");
     }
   }
   delay(10);
