@@ -40,6 +40,11 @@ void loop()
     else
     {
       skippedMillis += delta;
+      if(skippedMillis >= 500){
+        FlashCounter++;
+        ClockCounter = 0;
+        skippedMillis = 0;
+      }
     }
     Serial.print(FlashCounter);
     Serial.print(": ");
